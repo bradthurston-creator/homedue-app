@@ -27,6 +27,7 @@ workflows:
           # Camera plugin needs iOS 15.5+
           sed -i '' 's/IPHONEOS_DEPLOYMENT_TARGET = 13.0;/IPHONEOS_DEPLOYMENT_TARGET = 16.0;/g' ios/App/App.xcodeproj/project.pbxproj
           sed -i '' 's/IPHONEOS_DEPLOYMENT_TARGET = 13.5;/IPHONEOS_DEPLOYMENT_TARGET = 16.0;/g' ios/App/App.xcodeproj/project.pbxproj
+          sed -i '' "s/platform :ios, '13.0'/platform :ios, '16.0'/g" ios/App/Podfile
 
       - name: Sync Capacitor with iOS
         script: npx cap sync ios
