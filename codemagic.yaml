@@ -24,7 +24,6 @@ workflows:
         script: |
           rm -rf ios
           npx cap add ios
-          # Camera plugin needs iOS 15.5+
           sed -i '' 's/IPHONEOS_DEPLOYMENT_TARGET = 13.0;/IPHONEOS_DEPLOYMENT_TARGET = 16.0;/g' ios/App/App.xcodeproj/project.pbxproj
           sed -i '' 's/IPHONEOS_DEPLOYMENT_TARGET = 13.5;/IPHONEOS_DEPLOYMENT_TARGET = 16.0;/g' ios/App/App.xcodeproj/project.pbxproj
           sed -i '' "s/platform :ios, '13.0'/platform :ios, '16.0'/g" ios/App/Podfile
@@ -32,12 +31,12 @@ workflows:
       - name: Sync Capacitor with iOS
         script: npx cap sync ios
 
-      - name: Configure Info.plist
+      - name: Configure project
         script: |
           /usr/libexec/PlistBuddy -c "Set :CFBundleIdentifier $APP_ID" ios/App/App/Info.plist
           plutil -insert ITSAppUsesNonExemptEncryption -bool NO ios/App/App/Info.plist 2>/dev/null || true
-          # Set development team in project
           sed -i '' "s/DEVELOPMENT_TEAM = [^;]*;/DEVELOPMENT_TEAM = DN52659LL2;/g" ios/App/App.xcodeproj/project.pbxproj
+          bash scripts/gen-scheme.sh ios/App/App.xcodeproj/project.pbxproj ios/App/App.xcodeproj/xcshareddata/xcschemes
 
       - name: Set build version
         script: |
@@ -68,11 +67,12 @@ workflows:
       - name: Export IPA
         script: |
           mkdir -p /tmp/ipa
-          /usr/libexec/PlistBuddy -x -c "Add :method string app-store-connect" \
+          /usr/libexec/PlistBuddy -x \
+            -c "Add :method string app-store-connect" \
             -c "Add :teamID string DN52659LL2" \
             -c "Add :compileBitcode bool false" \
             -c "Add :signingStyle string automatic" \
-            /tmp/exportOptions.plist
+            /tmp/exportOptions.plist 2>/dev/null
           xcodebuild -exportArchive \
             -archivePath /tmp/xcarchive/HomeDue.xcarchive \
             -exportPath /tmp/ipa \
