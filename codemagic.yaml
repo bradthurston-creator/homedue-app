@@ -33,10 +33,17 @@ workflows:
 
       - name: Configure project
         script: |
+          set -x
+          ls ios/App/App/Info.plist
           /usr/libexec/PlistBuddy -c "Set :CFBundleIdentifier $APP_ID" ios/App/App/Info.plist 2>/dev/null || /usr/libexec/PlistBuddy -c "Add :CFBundleIdentifier string $APP_ID" ios/App/App/Info.plist
+          if [ $? -ne 0 ]; then echo "ERROR at PlistBuddy"; exit 1; fi
           plutil -insert ITSAppUsesNonExemptEncryption -bool NO ios/App/App/Info.plist 2>/dev/null || true
           sed -i '' "s/DEVELOPMENT_TEAM = [^;]*;/DEVELOPMENT_TEAM = DN52659LL2;/g" ios/App/App.xcodeproj/project.pbxproj
+          if [ $? -ne 0 ]; then echo "ERROR at sed"; exit 1; fi
+          echo "Running gen-scheme..."
           bash scripts/gen-scheme.sh ios/App/App.xcodeproj/project.pbxproj ios/App/App.xcodeproj/xcshareddata/xcschemes
+          if [ $? -ne 0 ]; then echo "ERROR at gen-scheme"; exit 1; fi
+          echo "Configure done"
 
       - name: Set build version
         script: |
