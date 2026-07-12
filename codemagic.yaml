@@ -24,6 +24,9 @@ workflows:
         script: |
           rm -rf ios
           npx cap add ios
+          # Camera plugin needs iOS 15.5+
+          sed -i '' 's/IPHONEOS_DEPLOYMENT_TARGET = 13.0;/IPHONEOS_DEPLOYMENT_TARGET = 16.0;/g' ios/App/App.xcodeproj/project.pbxproj
+          sed -i '' 's/IPHONEOS_DEPLOYMENT_TARGET = 13.5;/IPHONEOS_DEPLOYMENT_TARGET = 16.0;/g' ios/App/App.xcodeproj/project.pbxproj
 
       - name: Sync Capacitor with iOS
         script: npx cap sync ios
