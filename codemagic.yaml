@@ -33,14 +33,10 @@ workflows:
 
       - name: Configure project
         script: |
-          set -x
-          ls ios/App/App/Info.plist
           /usr/libexec/PlistBuddy -c "Set :CFBundleIdentifier $APP_ID" ios/App/App/Info.plist 2>/dev/null || /usr/libexec/PlistBuddy -c "Add :CFBundleIdentifier string $APP_ID" ios/App/App/Info.plist
           plutil -insert ITSAppUsesNonExemptEncryption -bool NO ios/App/App/Info.plist 2>/dev/null || true
           sed -i '' "s/DEVELOPMENT_TEAM = [^;]*;/DEVELOPMENT_TEAM = DN52659LL2;/g" ios/App/App.xcodeproj/project.pbxproj
-          echo "Running scheme script..."
           bash scripts/gen-scheme.sh ios/App/App.xcodeproj/project.pbxproj ios/App/App.xcodeproj/xcshareddata/xcschemes
-          echo "Configure done"
 
       - name: Set build version
         script: |
@@ -54,22 +50,19 @@ workflows:
           keychain initialize
           app-store-connect fetch-signing-files $APP_ID --type IOS_APP_STORE --create
           keychain add-certificates
-          # Copy profiles to where Xcode finds them
-          mkdir -p $HOME/Library/MobileDevice/Provisioning\ Profiles
-          cp $HOME/Library/Developer/Xcode/UserData/Provisioning\ Profiles/*.mobileprovision $HOME/Library/MobileDevice/Provisioning\ Profiles/ 2>/dev/null || true
-          echo "Profiles installed:"
-          ls $HOME/Library/MobileDevice/Provisioning\ Profiles/ 2>/dev/null
+          xcode-project use-profiles
+          echo "CODE_SIGN_STYLE after use-profiles:"
+          grep "CODE_SIGN_STYLE" ios/App/App.xcodeproj/project.pbxproj
 
       - name: Build iOS app
         script: |
-          # Keep Automatic signing, profiles already in place
-          sed -i '' "s/CODE_SIGN_STYLE = [^;]*;/CODE_SIGN_STYLE = Automatic;/g" ios/App/App.xcodeproj/project.pbxproj
           cd ios/App
           xcodebuild -project App.xcodeproj \
             -scheme App \
             -sdk iphoneos \
             -configuration Release \
             -archivePath /tmp/xcarchive/HomeDue.xcarchive \
+            -allowProvisioningUpdates \
             DEVELOPMENT_TEAM=DN52659LL2 \
             archive
 
@@ -80,7 +73,7 @@ workflows:
             -c "Add :method string app-store-connect" \
             -c "Add :teamID string DN52659LL2" \
             -c "Add :compileBitcode bool false" \
-            -c "Add :signingStyle string manual" \
+            -c "Add :signingStyle string automatic" \
             /tmp/exportOptions.plist 2>/dev/null
           xcodebuild -exportArchive \
             -archivePath /tmp/xcarchive/HomeDue.xcarchive \
