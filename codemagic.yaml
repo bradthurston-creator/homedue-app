@@ -57,21 +57,13 @@ workflows:
           # Copy profiles to where Xcode finds them
           mkdir -p $HOME/Library/MobileDevice/Provisioning\ Profiles
           cp $HOME/Library/Developer/Xcode/UserData/Provisioning\ Profiles/*.mobileprovision $HOME/Library/MobileDevice/Provisioning\ Profiles/ 2>/dev/null || true
-          xcode-project use-profiles
-          # Get profile name from the downloaded file
-          PROFILE_FILE=$(ls $HOME/Library/MobileDevice/Provisioning\ Profiles/*.mobileprovision 2>/dev/null | head -1)
-          if [ -n "$PROFILE_FILE" ]; then
-            PROFILE_NAME=$(security cms -D -i "$PROFILE_FILE" 2>/dev/null | plutil -extract Name raw - 2>/dev/null || echo "")
-            if [ -n "$PROFILE_NAME" ]; then
-              echo "Setting PROVISIONING_PROFILE_SPECIFIER = $PROFILE_NAME"
-              sed -i '' "s/PROVISIONING_PROFILE_SPECIFIER = [^;]*;/PROVISIONING_PROFILE_SPECIFIER = $PROFILE_NAME;/g" ios/App/App.xcodeproj/project.pbxproj
-              sed -i '' "s/CODE_SIGN_STYLE = [^;]*;/CODE_SIGN_STYLE = Manual;/g" ios/App/App.xcodeproj/project.pbxproj
-            fi
-          fi
-          echo "Code signing setup complete"
+          echo "Profiles installed:"
+          ls $HOME/Library/MobileDevice/Provisioning\ Profiles/ 2>/dev/null
 
       - name: Build iOS app
         script: |
+          # Keep Automatic signing, profiles already in place
+          sed -i '' "s/CODE_SIGN_STYLE = [^;]*;/CODE_SIGN_STYLE = Automatic;/g" ios/App/App.xcodeproj/project.pbxproj
           cd ios/App
           xcodebuild -project App.xcodeproj \
             -scheme App \
