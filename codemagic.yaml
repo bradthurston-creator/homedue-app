@@ -36,6 +36,9 @@ workflows:
         script: |
           /usr/libexec/PlistBuddy -c "Set :CFBundleIdentifier $APP_ID" ios/App/App/Info.plist
           plutil -insert ITSAppUsesNonExemptEncryption -bool NO ios/App/App/Info.plist 2>/dev/null || true
+          # Set development team and automatic signing in project
+          sed -i '' "s/DEVELOPMENT_TEAM = [^;]*;/DEVELOPMENT_TEAM = DN52659LL2;/g" ios/App/App.xcodeproj/project.pbxproj
+          sed -i '' "s/CODE_SIGN_STYLE = [^;]*;/CODE_SIGN_STYLE = Automatic;/g" ios/App/App.xcodeproj/project.pbxproj
 
       - name: Set build version
         script: |
