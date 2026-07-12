@@ -9,7 +9,6 @@ workflows:
         APP_ID: com.homedue.app
         APP_NAME: HomeDue
         APP_VERSION: 1.0
-        # BUILD_NUMBER is auto-incremented by Codemagic
       node: 22
       xcode: latest
       cocoapods: default
@@ -22,18 +21,20 @@ workflows:
         script: npm install --legacy-peer-deps
 
       - name: Add iOS platform
-        script: npx cap add ios
+        script: |
+          rm -rf ios
+          npx cap add ios
 
       - name: Sync Capacitor with iOS
         script: npx cap sync ios
 
-      - name: Set app bundle identifier
+      - name: Configure Info.plist
         script: |
           /usr/libexec/PlistBuddy -c "Set :CFBundleIdentifier $APP_ID" ios/App/App/Info.plist
+          plutil -insert ITSAppUsesNonExemptEncryption -bool NO ios/App/App/Info.plist 2>/dev/null || true
 
       - name: Set build version
         script: |
-          # Use Codemagic auto-incrementing build number
           BUILD_NUM=${PROJECT_BUILD_NUMBER:-1}
           echo "Setting version $APP_VERSION ($BUILD_NUM)"
           sed -i '' "s/MARKETING_VERSION = [^;]*;/MARKETING_VERSION = $APP_VERSION;/g" ios/App/App.xcodeproj/project.pbxproj
@@ -54,10 +55,15 @@ workflows:
       - name: Export IPA
         script: |
           mkdir -p /tmp/ipa
+          /usr/libexec/PlistBuddy -x -c "Add :method string app-store-connect" \
+            -c "Add :teamID string DN52659LL2" \
+            -c "Add :compileBitcode bool false" \
+            -c "Add :signingStyle string automatic" \
+            /tmp/exportOptions.plist
           xcodebuild -exportArchive \
             -archivePath /tmp/xcarchive/HomeDue.xcarchive \
             -exportPath /tmp/ipa \
-            -exportOptionsPlist ios/exportOptions.plist \
+            -exportOptionsPlist /tmp/exportOptions.plist \
             -allowProvisioningUpdates
 
     artifacts:
