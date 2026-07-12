@@ -49,20 +49,12 @@ workflows:
           keychain initialize
           app-store-connect fetch-signing-files $APP_ID --type IOS_APP_STORE --create --certificate-key @env:CERTIFICATE_PRIVATE_KEY
           keychain add-certificates
-          xcode-project use-profiles
-          # Copy profiles to both locations Xcode checks
+          # Copy profiles to MobileDevice
           mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
           cp "$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles/"*.mobileprovision "$HOME/Library/MobileDevice/Provisioning Profiles/" 2>/dev/null || true
-          # Extract profile name to set explicitly
-          PROFILE_FILE=$(ls "$HOME/Library/MobileDevice/Provisioning Profiles/"*.mobileprovision 2>/dev/null | head -1)
-          if [ -n "$PROFILE_FILE" ]; then
-            PROFILE_NAME=$(security cms -D -i "$PROFILE_FILE" 2>/dev/null | plutil -extract Name raw - 2>/dev/null || echo "")
-            PROFILE_UUID=$(security cms -D -i "$PROFILE_FILE" 2>/dev/null | plutil -extract UUID raw - 2>/dev/null || echo "")
-            echo "Installed profile: $PROFILE_NAME ($PROFILE_UUID)"
-            # Save UUID for export step
-            echo "$PROFILE_UUID" > /tmp/homedue_profile_uuid.txt
-            echo "$PROFILE_NAME" > /tmp/homedue_profile_name.txt
-          fi
+          # Set Automatic signing - let -allowProvisioningUpdates handle the rest
+          sed -i '' "s/CODE_SIGN_STYLE = [^;]*;/CODE_SIGN_STYLE = Automatic;/g" ios/App/App.xcodeproj/project.pbxproj
+          echo "Code signing setup complete"
 
       - name: Build iOS app
         script: |
@@ -72,6 +64,7 @@ workflows:
             -sdk iphoneos \
             -configuration Release \
             -archivePath /tmp/xcarchive/HomeDue.xcarchive \
+            -allowProvisioningUpdates \
             DEVELOPMENT_TEAM=DN52659LL2 \
             archive
 
@@ -85,14 +78,13 @@ workflows:
             -c "Add :method string app-store-connect" \
             -c "Add :teamID string DN52659LL2" \
             -c "Add :compileBitcode bool false" \
-            -c "Add :signingStyle string manual" \
-            -c "Add :provisioningProfiles dict" \
-            -c "Add :provisioningProfiles:${APP_ID} string ${PROFILE_NAME}" \
+            -c "Add :signingStyle string automatic" \
             /tmp/exportOptions.plist 2>/dev/null
           xcodebuild -exportArchive \
             -archivePath /tmp/xcarchive/HomeDue.xcarchive \
             -exportPath /tmp/ipa \
-            -exportOptionsPlist /tmp/exportOptions.plist
+            -exportOptionsPlist /tmp/exportOptions.plist \
+            -allowProvisioningUpdates
 
     artifacts:
       - /tmp/xcarchive/*.xcarchive
