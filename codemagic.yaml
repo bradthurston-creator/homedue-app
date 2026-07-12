@@ -22,10 +22,8 @@ workflows:
       - name: Install npm dependencies
         script: npm install --legacy-peer-deps
 
-      - name: Add iOS platform
+      - name: Patch iOS deployment target
         script: |
-          rm -rf ios
-          npx cap add ios
           sed -i '' 's/IPHONEOS_DEPLOYMENT_TARGET = 13.0;/IPHONEOS_DEPLOYMENT_TARGET = 16.0;/g' ios/App/App.xcodeproj/project.pbxproj
           sed -i '' 's/IPHONEOS_DEPLOYMENT_TARGET = 13.5;/IPHONEOS_DEPLOYMENT_TARGET = 16.0;/g' ios/App/App.xcodeproj/project.pbxproj
           sed -i '' "s/platform :ios, '13.0'/platform :ios, '16.0'/g" ios/App/Podfile
@@ -35,17 +33,7 @@ workflows:
 
       - name: Configure project
         script: |
-          set -x
-          ls ios/App/App/Info.plist
-          /usr/libexec/PlistBuddy -c "Set :CFBundleIdentifier $APP_ID" ios/App/App/Info.plist 2>/dev/null || /usr/libexec/PlistBuddy -c "Add :CFBundleIdentifier string $APP_ID" ios/App/App/Info.plist
-          if [ $? -ne 0 ]; then echo "ERROR at PlistBuddy"; exit 1; fi
           plutil -insert ITSAppUsesNonExemptEncryption -bool NO ios/App/App/Info.plist 2>/dev/null || true
-          sed -i '' "s/DEVELOPMENT_TEAM = [^;]*;/DEVELOPMENT_TEAM = DN52659LL2;/g" ios/App/App.xcodeproj/project.pbxproj
-          if [ $? -ne 0 ]; then echo "ERROR at sed"; exit 1; fi
-          echo "Running gen-scheme..."
-          bash scripts/gen-scheme.sh ios/App/App.xcodeproj/project.pbxproj ios/App/App.xcodeproj/xcshareddata/xcschemes
-          if [ $? -ne 0 ]; then echo "ERROR at gen-scheme"; exit 1; fi
-          echo "Configure done"
 
       - name: Set build version
         script: |
@@ -61,7 +49,6 @@ workflows:
           keychain add-certificates
           mkdir -p $HOME/Library/MobileDevice/Provisioning\ Profiles
           cp $HOME/Library/Developer/Xcode/UserData/Provisioning\ Profiles/*.mobileprovision $HOME/Library/MobileDevice/Provisioning\ Profiles/ 2>/dev/null || true
-          # Set Automatic signing - let -allowProvisioningUpdates handle the rest
           sed -i '' "s/CODE_SIGN_STYLE = [^;]*;/CODE_SIGN_STYLE = Automatic;/g" ios/App/App.xcodeproj/project.pbxproj
           echo "Code signing setup complete"
 
