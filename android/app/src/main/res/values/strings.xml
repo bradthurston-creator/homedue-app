@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">HomeDue</string>
+    <string name="title_activity_main">HomeDue</string>
+    <string name="package_name">com.homedue.app</string>
+    <string name="custom_url_scheme">com.homedue.app</string>
+</resources>

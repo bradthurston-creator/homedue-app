@@ -1,0 +1,29 @@
+{
+  "name": "homedue-app",
+  "version": "1.0.0",
+  "description": "HomeDue — Home maintenance tracker. Know what's due at home.",
+  "main": "www/js/app.js",
+  "scripts": {
+    "build": "node scripts/build-db.js",
+    "sync": "npx cap sync",
+    "dev": "npx http-server www -p 8100 -c-1",
+    "android:open": "npx cap open android",
+    "ios:open": "npx cap open ios",
+    "seed": "node scripts/build-db.js"
+  },
+  "dependencies": {
+    "@capacitor/camera": "^8.2.1",
+    "@capacitor/core": "^6.1.0",
+    "@capacitor/filesystem": "^8.1.2",
+    "@capacitor/local-notifications": "^8.2.0",
+    "@capacitor/splash-screen": "^6.0.0",
+    "@capacitor/status-bar": "^6.0.0"
+  },
+  "devDependencies": {
+    "@capacitor/android": "^6.1.0",
+    "@capacitor/cli": "^6.1.0",
+    "@capacitor/ios": "^6.1.0",
+    "better-sqlite3": "^11.0.0",
+    "http-server": "^14.1.0"
+  }
+}

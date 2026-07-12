@@ -1,0 +1,20 @@
+{
+  "appId": "com.homedue.app",
+  "appName": "HomeDue",
+  "webDir": "www",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https",
+    "iosScheme": "capacitor"
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 2000,
+      "backgroundColor": "#1e293b"
+    },
+    "StatusBar": {
+      "style": "DARK",
+      "backgroundColor": "#1e293b"
+    }
+  }
+}

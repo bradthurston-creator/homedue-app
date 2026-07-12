@@ -1,0 +1,1270 @@
+{
+  "version": "1.0",
+  "count": 158,
+  "tasks": [
+    {
+      "id": "hvac-01",
+      "category": "HVAC",
+      "name": "Change air filter",
+      "freqDays": 90,
+      "season": "Year-round",
+      "notes": "Check monthly, replace every 1-3 months"
+    },
+    {
+      "id": "hvac-02",
+      "category": "HVAC",
+      "name": "HVAC professional tune-up",
+      "freqDays": 365,
+      "season": "Spring/Fall",
+      "notes": "Service AC in spring, furnace in fall"
+    },
+    {
+      "id": "hvac-03",
+      "category": "HVAC",
+      "name": "Clean condenser coils",
+      "freqDays": 365,
+      "season": "Spring",
+      "notes": "Outdoor AC unit coils collect dirt"
+    },
+    {
+      "id": "hvac-04",
+      "category": "HVAC",
+      "name": "Check refrigerant levels",
+      "freqDays": 365,
+      "season": "Spring",
+      "notes": "Low refrigerant indicates a leak"
+    },
+    {
+      "id": "hvac-05",
+      "category": "HVAC",
+      "name": "Replace thermostat batteries",
+      "freqDays": 365,
+      "season": "Fall",
+      "notes": "Before heating season"
+    },
+    {
+      "id": "hvac-06",
+      "category": "HVAC",
+      "name": "Clean evaporator coils",
+      "freqDays": 912,
+      "season": "Spring",
+      "notes": "Indoor unit coils"
+    },
+    {
+      "id": "hvac-07",
+      "category": "HVAC",
+      "name": "Inspect ductwork for leaks",
+      "freqDays": 1461,
+      "season": "Any",
+      "notes": "Can waste 20-30% of heating/cooling"
+    },
+    {
+      "id": "hvac-08",
+      "category": "HVAC",
+      "name": "Clean blower fan",
+      "freqDays": 912,
+      "season": "Spring",
+      "notes": "Improves airflow efficiency"
+    },
+    {
+      "id": "hvac-09",
+      "category": "HVAC",
+      "name": "Check CO levels near furnace",
+      "freqDays": 30,
+      "season": "Heating season",
+      "notes": "Safety check"
+    },
+    {
+      "id": "plumbing-01",
+      "category": "Plumbing",
+      "name": "Flush water heater",
+      "freqDays": 365,
+      "season": "Spring",
+      "notes": "Drains sediment, extends life"
+    },
+    {
+      "id": "plumbing-02",
+      "category": "Plumbing",
+      "name": "Check water pressure",
+      "freqDays": 365,
+      "season": "Any",
+      "notes": "Should be 40-80 PSI"
+    },
+    {
+      "id": "plumbing-03",
+      "category": "Plumbing",
+      "name": "Clean faucet aerators",
+      "freqDays": 182,
+      "season": "Any",
+      "notes": "Remove mineral buildup"
+    },
+    {
+      "id": "plumbing-04",
+      "category": "Plumbing",
+      "name": "Inspect for leaks under sinks",
+      "freqDays": 30,
+      "season": "Year-round",
+      "notes": "Check cabinet floors for moisture"
+    },
+    {
+      "id": "plumbing-05",
+      "category": "Plumbing",
+      "name": "Test sump pump",
+      "freqDays": 90,
+      "season": "Year-round",
+      "notes": "Pour water in, verify it runs"
+    },
+    {
+      "id": "plumbing-06",
+      "category": "Plumbing",
+      "name": "Insulate exposed pipes",
+      "freqDays": 365,
+      "season": "Fall",
+      "notes": "Prevents freezing"
+    },
+    {
+      "id": "plumbing-07",
+      "category": "Plumbing",
+      "name": "Winterize outdoor faucets",
+      "freqDays": 365,
+      "season": "Fall",
+      "notes": "Disconnect hoses, shut off inside valve"
+    },
+    {
+      "id": "plumbing-08",
+      "category": "Plumbing",
+      "name": "Clean garbage disposal",
+      "freqDays": 30,
+      "season": "Year-round",
+      "notes": "Ice cubes and vinegar or disposal cleaner"
+    },
+    {
+      "id": "plumbing-09",
+      "category": "Plumbing",
+      "name": "Replace washing machine hoses",
+      "freqDays": 1461,
+      "season": "Any",
+      "notes": "Burst hoses cause major water damage"
+    },
+    {
+      "id": "plumbing-10",
+      "category": "Plumbing",
+      "name": "Replace dishwasher supply line",
+      "freqDays": 1825,
+      "season": "Any",
+      "notes": "Same reason as washing machine"
+    },
+    {
+      "id": "plumbing-11",
+      "category": "Plumbing",
+      "name": "Check toilet for leaks",
+      "freqDays": 182,
+      "season": "Year-round",
+      "notes": "Food coloring in tank test"
+    },
+    {
+      "id": "plumbing-12",
+      "category": "Plumbing",
+      "name": "Replace toilet flapper",
+      "freqDays": 0,
+      "season": "Any",
+      "notes": "As needed \u2014 causes running toilet"
+    },
+    {
+      "id": "plumbing-13",
+      "category": "Plumbing",
+      "name": "Inspect water softener salt level",
+      "freqDays": 30,
+      "season": "Year-round",
+      "notes": "If you have a water softener"
+    },
+    {
+      "id": "electrical-01",
+      "category": "Electrical",
+      "name": "Test smoke detectors",
+      "freqDays": 30,
+      "season": "Year-round",
+      "notes": "Press test button on each"
+    },
+    {
+      "id": "electrical-02",
+      "category": "Electrical",
+      "name": "Replace smoke detector batteries",
+      "freqDays": 365,
+      "season": "Fall",
+      "notes": "When clocks change"
+    },
+    {
+      "id": "electrical-03",
+      "category": "Electrical",
+      "name": "Replace smoke detector units",
+      "freqDays": 3650,
+      "season": "Any",
+      "notes": "Expire after 10 years"
+    },
+    {
+      "id": "electrical-04",
+      "category": "Electrical",
+      "name": "Test carbon monoxide detectors",
+      "freqDays": 30,
+      "season": "Year-round",
+      "notes": "Press test button"
+    },
+    {
+      "id": "electrical-05",
+      "category": "Electrical",
+      "name": "Replace CO detector",
+      "freqDays": 2190,
+      "season": "Any",
+      "notes": "Check manufacturer specs"
+    },
+    {
+      "id": "electrical-06",
+      "category": "Electrical",
+      "name": "Test GFCI outlets",
+      "freqDays": 30,
+      "season": "Year-round",
+      "notes": "Press test and reset buttons"
+    },
+    {
+      "id": "electrical-07",
+      "category": "Electrical",
+      "name": "Inspect electrical panel",
+      "freqDays": 365,
+      "season": "Any",
+      "notes": "Look for rust, corrosion, loose wires"
+    },
+    {
+      "id": "electrical-08",
+      "category": "Electrical",
+      "name": "Reset tripped breakers",
+      "freqDays": 0,
+      "season": "Any",
+      "notes": "As needed \u2014 label your panel"
+    },
+    {
+      "id": "electrical-09",
+      "category": "Electrical",
+      "name": "Check extension cords for damage",
+      "freqDays": 182,
+      "season": "Any",
+      "notes": "Replace frayed cords"
+    },
+    {
+      "id": "electrical-10",
+      "category": "Electrical",
+      "name": "Test surge protector",
+      "freqDays": 365,
+      "season": "Any",
+      "notes": "Replace if indicator light is off"
+    },
+    {
+      "id": "roof-01",
+      "category": "Roof & Gutters",
+      "name": "Clean gutters and downspouts",
+      "freqDays": 182,
+      "season": "Spring/Fall",
+      "notes": "After leaf season especially"
+    },
+    {
+      "id": "roof-02",
+      "category": "Roof & Gutters",
+      "name": "Inspect roof for damage",
+      "freqDays": 365,
+      "season": "Spring",
+      "notes": "Check after winter weather"
+    },
+    {
+      "id": "roof-03",
+      "category": "Roof & Gutters",
+      "name": "Check for missing or damaged shingles",
+      "freqDays": 365,
+      "season": "Spring",
+      "notes": "Look from ground with binoculars"
+    },
+    {
+      "id": "roof-04",
+      "category": "Roof & Gutters",
+      "name": "Inspect flashing around chimney",
+      "freqDays": 365,
+      "season": "Spring",
+      "notes": "Common leak point"
+    },
+    {
+      "id": "roof-05",
+      "category": "Roof & Gutters",
+      "name": "Clean gutter guards",
+      "freqDays": 365,
+      "season": "Fall",
+      "notes": "If you have them installed"
+    },
+    {
+      "id": "roof-06",
+      "category": "Roof & Gutters",
+      "name": "Check for ice dams",
+      "freqDays": 0,
+      "season": "Winter",
+      "notes": "After heavy snow"
+    },
+    {
+      "id": "roof-07",
+      "category": "Roof & Gutters",
+      "name": "Inspect soffits and fascia",
+      "freqDays": 365,
+      "season": "Spring",
+      "notes": "Look for rot or damage"
+    },
+    {
+      "id": "exterior-01",
+      "category": "Exterior",
+      "name": "Power wash siding",
+      "freqDays": 365,
+      "season": "Spring",
+      "notes": "Removes mold, mildew, dirt"
+    },
+    {
+      "id": "exterior-02",
+      "category": "Exterior",
+      "name": "Power wash driveway and walkways",
+      "freqDays": 365,
+      "season": "Spring",
+      "notes": "Also check for cracks"
+    },
+    {
+      "id": "exterior-03",
+      "category": "Exterior",
+      "name": "Seal driveway",
+      "freqDays": 912,
+      "season": "Summer/Fall",
+      "notes": "Protects asphalt"
+    },
+    {
+      "id": "exterior-04",
+      "category": "Exterior",
+      "name": "Inspect foundation for cracks",
+      "freqDays": 365,
+      "season": "Spring",
+      "notes": "Small cracks normal, large ones need attention"
+    },
+    {
+      "id": "exterior-05",
+      "category": "Exterior",
+      "name": "Caulk windows and doors",
+      "freqDays": 0,
+      "season": "Fall",
+      "notes": "As needed \u2014 before heating season"
+    },
+    {
+      "id": "exterior-06",
+      "category": "Exterior",
+      "name": "Replace weatherstripping",
+      "freqDays": 0,
+      "season": "Fall",
+      "notes": "As needed \u2014 check for drafts"
+    },
+    {
+      "id": "exterior-07",
+      "category": "Exterior",
+      "name": "Paint or stain deck",
+      "freqDays": 912,
+      "season": "Summer",
+      "notes": "Protects wood from rot"
+    },
+    {
+      "id": "exterior-08",
+      "category": "Exterior",
+      "name": "Seal or stain fence",
+      "freqDays": 1095,
+      "season": "Summer",
+      "notes": "Extends fence life"
+    },
+    {
+      "id": "exterior-09",
+      "category": "Exterior",
+      "name": "Trim trees and shrubs away from house",
+      "freqDays": 365,
+      "season": "Spring/Fall",
+      "notes": "Prevents damage and pest access"
+    },
+    {
+      "id": "exterior-10",
+      "category": "Exterior",
+      "name": "Inspect chimney and cap",
+      "freqDays": 365,
+      "season": "Fall",
+      "notes": "Before using fireplace"
+    },
+    {
+      "id": "exterior-11",
+      "category": "Exterior",
+      "name": "Clean dryer vent",
+      "freqDays": 365,
+      "season": "Spring",
+      "notes": "Prevents fire hazard"
+    },
+    {
+      "id": "exterior-12",
+      "category": "Exterior",
+      "name": "Check and repair window screens",
+      "freqDays": 365,
+      "season": "Spring",
+      "notes": "Before mosquito season"
+    },
+    {
+      "id": "exterior-13",
+      "category": "Exterior",
+      "name": "Inspect and clean deck and patio",
+      "freqDays": 365,
+      "season": "Spring",
+      "notes": "Check for rot, loose boards"
+    },
+    {
+      "id": "exterior-14",
+      "category": "Exterior",
+      "name": "Check mailbox condition",
+      "freqDays": 365,
+      "season": "Any",
+      "notes": "Tighten post, repaint if needed"
+    },
+    {
+      "id": "exterior-15",
+      "category": "Exterior",
+      "name": "Test outdoor GFCI outlets",
+      "freqDays": 30,
+      "season": "Year-round",
+      "notes": "Same as interior GFCI test"
+    },
+    {
+      "id": "exterior-16",
+      "category": "Exterior",
+      "name": "Inspect fence for damage",
+      "freqDays": 365,
+      "season": "Spring",
+      "notes": "After winter storms"
+    },
+    {
+      "id": "interior-01",
+      "category": "Interior",
+      "name": "Deep clean carpets and rugs",
+      "freqDays": 365,
+      "season": "Any",
+      "notes": "Or as needed for high-traffic areas"
+    },
+    {
+      "id": "interior-02",
+      "category": "Interior",
+      "name": "Clean refrigerator coils",
+      "freqDays": 182,
+      "season": "Any",
+      "notes": "Vacuum dust for efficiency"
+    },
+    {
+      "id": "interior-03",
+      "category": "Interior",
+      "name": "Replace refrigerator water filter",
+      "freqDays": 182,
+      "season": "Any",
+      "notes": "Per manufacturer spec"
+    },
+    {
+      "id": "interior-04",
+      "category": "Interior",
+      "name": "Clean dishwasher filter",
+      "freqDays": 30,
+      "season": "Year-round",
+      "notes": "Prevents buildup and odors"
+    },
+    {
+      "id": "interior-05",
+      "category": "Interior",
+      "name": "Clean range hood filter",
+      "freqDays": 90,
+      "season": "Year-round",
+      "notes": "Removes grease buildup"
+    },
+    {
+      "id": "interior-06",
+      "category": "Interior",
+      "name": "Clean oven",
+      "freqDays": 120,
+      "season": "Any",
+      "notes": "Self-cleaning or manual"
+    },
+    {
+      "id": "interior-07",
+      "category": "Interior",
+      "name": "Descale coffee maker",
+      "freqDays": 90,
+      "season": "Year-round",
+      "notes": "Vinegar rinse cycle"
+    },
+    {
+      "id": "interior-08",
+      "category": "Interior",
+      "name": "Clean washing machine",
+      "freqDays": 30,
+      "season": "Year-round",
+      "notes": "Run cleaning cycle or vinegar"
+    },
+    {
+      "id": "interior-09",
+      "category": "Interior",
+      "name": "Inspect fire extinguisher",
+      "freqDays": 30,
+      "season": "Year-round",
+      "notes": "Check pressure gauge \u2014 needle in green"
+    },
+    {
+      "id": "interior-10",
+      "category": "Interior",
+      "name": "Replace fire extinguisher",
+      "freqDays": 4015,
+      "season": "Any",
+      "notes": "Expires even if unused"
+    },
+    {
+      "id": "interior-11",
+      "category": "Interior",
+      "name": "Test garage door auto-reverse",
+      "freqDays": 30,
+      "season": "Year-round",
+      "notes": "Place object in door path"
+    },
+    {
+      "id": "interior-12",
+      "category": "Interior",
+      "name": "Lubricate garage door tracks and springs",
+      "freqDays": 365,
+      "season": "Spring",
+      "notes": "Use garage door lubricant"
+    },
+    {
+      "id": "interior-13",
+      "category": "Interior",
+      "name": "Clean ceiling fans",
+      "freqDays": 90,
+      "season": "Year-round",
+      "notes": "Reverse direction seasonally"
+    },
+    {
+      "id": "interior-14",
+      "category": "Interior",
+      "name": "Clean dryer vent lint trap",
+      "freqDays": 1,
+      "season": "Year-round",
+      "notes": "Before every load"
+    },
+    {
+      "id": "interior-15",
+      "category": "Interior",
+      "name": "Deep clean dryer vent duct",
+      "freqDays": 365,
+      "season": "Spring",
+      "notes": "Full duct cleaning for fire safety"
+    },
+    {
+      "id": "interior-16",
+      "category": "Interior",
+      "name": "Check attic insulation",
+      "freqDays": 365,
+      "season": "Fall",
+      "notes": "Before heating season"
+    },
+    {
+      "id": "interior-17",
+      "category": "Interior",
+      "name": "Inspect attic for leaks or pests",
+      "freqDays": 182,
+      "season": "Spring/Fall",
+      "notes": "Look for water stains, droppings"
+    },
+    {
+      "id": "interior-18",
+      "category": "Interior",
+      "name": "Inspect crawl space",
+      "freqDays": 182,
+      "season": "Spring/Fall",
+      "notes": "Check moisture, ventilation, pests"
+    },
+    {
+      "id": "interior-19",
+      "category": "Interior",
+      "name": "Check basement for moisture or mold",
+      "freqDays": 30,
+      "season": "Year-round",
+      "notes": "After rain especially"
+    },
+    {
+      "id": "lawn-01",
+      "category": "Lawn & Yard",
+      "name": "Mow lawn",
+      "freqDays": 7,
+      "season": "Spring/Summer/Fall",
+      "notes": "Adjust height by season"
+    },
+    {
+      "id": "lawn-02",
+      "category": "Lawn & Yard",
+      "name": "Fertilize lawn",
+      "freqDays": 49,
+      "season": "Spring/Summer/Fall",
+      "notes": "Every 6-8 weeks"
+    },
+    {
+      "id": "lawn-03",
+      "category": "Lawn & Yard",
+      "name": "Aerate lawn",
+      "freqDays": 365,
+      "season": "Spring/Fall",
+      "notes": "Improves root growth"
+    },
+    {
+      "id": "lawn-04",
+      "category": "Lawn & Yard",
+      "name": "Overseed lawn",
+      "freqDays": 365,
+      "season": "Fall",
+      "notes": "Fills bare spots"
+    },
+    {
+      "id": "lawn-05",
+      "category": "Lawn & Yard",
+      "name": "Apply pre-emergent weed control",
+      "freqDays": 365,
+      "season": "Spring",
+      "notes": "Prevents crabgrass"
+    },
+    {
+      "id": "lawn-06",
+      "category": "Lawn & Yard",
+      "name": "Apply post-emergent weed control",
+      "freqDays": 0,
+      "season": "Spring/Summer",
+      "notes": "As needed \u2014 spot treat weeds"
+    },
+    {
+      "id": "lawn-07",
+      "category": "Lawn & Yard",
+      "name": "Prune trees and shrubs",
+      "freqDays": 365,
+      "season": "Spring",
+      "notes": "Depends on plant type"
+    },
+    {
+      "id": "lawn-08",
+      "category": "Lawn & Yard",
+      "name": "Mulch flower beds",
+      "freqDays": 365,
+      "season": "Spring",
+      "notes": "Retains moisture, suppresses weeds"
+    },
+    {
+      "id": "lawn-09",
+      "category": "Lawn & Yard",
+      "name": "Rake or mulch leaves",
+      "freqDays": 7,
+      "season": "Fall",
+      "notes": "Weekly during leaf season"
+    },
+    {
+      "id": "lawn-10",
+      "category": "Lawn & Yard",
+      "name": "Winterize sprinkler system",
+      "freqDays": 365,
+      "season": "Fall",
+      "notes": "Blow out lines before freeze"
+    },
+    {
+      "id": "lawn-11",
+      "category": "Lawn & Yard",
+      "name": "Start up sprinkler system in spring",
+      "freqDays": 365,
+      "season": "Spring",
+      "notes": "Check for broken heads"
+    },
+    {
+      "id": "lawn-12",
+      "category": "Lawn & Yard",
+      "name": "Sharpen lawn mower blade",
+      "freqDays": 365,
+      "season": "Spring",
+      "notes": "Clean cut prevents disease"
+    },
+    {
+      "id": "lawn-13",
+      "category": "Lawn & Yard",
+      "name": "Service lawn mower",
+      "freqDays": 365,
+      "season": "Spring",
+      "notes": "Oil change, spark plug, air filter"
+    },
+    {
+      "id": "lawn-14",
+      "category": "Lawn & Yard",
+      "name": "Treat for grubs and pests",
+      "freqDays": 0,
+      "season": "Summer",
+      "notes": "As needed \u2014 check for damage signs"
+    },
+    {
+      "id": "lawn-15",
+      "category": "Lawn & Yard",
+      "name": "Plant seasonal flowers",
+      "freqDays": 182,
+      "season": "Spring/Fall",
+      "notes": "Annuals and perennials"
+    },
+    {
+      "id": "spring-01",
+      "category": "Seasonal - Spring",
+      "name": "Inspect roof for winter damage",
+      "freqDays": 365,
+      "season": "Spring",
+      "notes": "Look for missing shingles, leaks"
+    },
+    {
+      "id": "spring-02",
+      "category": "Seasonal - Spring",
+      "name": "Clean gutters after winter",
+      "freqDays": 365,
+      "season": "Spring",
+      "notes": "Remove winter debris"
+    },
+    {
+      "id": "spring-03",
+      "category": "Seasonal - Spring",
+      "name": "Service AC system",
+      "freqDays": 365,
+      "season": "Spring",
+      "notes": "Before first heat wave"
+    },
+    {
+      "id": "spring-04",
+      "category": "Seasonal - Spring",
+      "name": "Service lawn equipment",
+      "freqDays": 365,
+      "season": "Spring",
+      "notes": "Tune mower, trimmer, edger"
+    },
+    {
+      "id": "spring-05",
+      "category": "Seasonal - Spring",
+      "name": "Power wash exterior",
+      "freqDays": 365,
+      "season": "Spring",
+      "notes": "House, deck, driveway, sidewalk"
+    },
+    {
+      "id": "spring-06",
+      "category": "Seasonal - Spring",
+      "name": "Seal or stain deck",
+      "freqDays": 912,
+      "season": "Spring/Summer",
+      "notes": "After power wash"
+    },
+    {
+      "id": "spring-07",
+      "category": "Seasonal - Spring",
+      "name": "Repair window screens",
+      "freqDays": 365,
+      "season": "Spring",
+      "notes": "Replace torn or damaged screens"
+    },
+    {
+      "id": "spring-08",
+      "category": "Seasonal - Spring",
+      "name": "Start sprinkler system",
+      "freqDays": 365,
+      "season": "Spring",
+      "notes": "Turn on water, check for leaks"
+    },
+    {
+      "id": "spring-09",
+      "category": "Seasonal - Spring",
+      "name": "Test sump pump",
+      "freqDays": 365,
+      "season": "Spring",
+      "notes": "Before heavy spring rains"
+    },
+    {
+      "id": "spring-10",
+      "category": "Seasonal - Spring",
+      "name": "Seal driveway",
+      "freqDays": 912,
+      "season": "Spring/Summer",
+      "notes": "After winter damage"
+    },
+    {
+      "id": "fall-01",
+      "category": "Seasonal - Fall",
+      "name": "Clean gutters after leaves drop",
+      "freqDays": 365,
+      "season": "Fall",
+      "notes": "After most leaves have fallen"
+    },
+    {
+      "id": "fall-02",
+      "category": "Seasonal - Fall",
+      "name": "Winterize outdoor faucets",
+      "freqDays": 365,
+      "season": "Fall",
+      "notes": "Disconnect hoses, shut off inside valve"
+    },
+    {
+      "id": "fall-03",
+      "category": "Seasonal - Fall",
+      "name": "Insulate exposed pipes",
+      "freqDays": 365,
+      "season": "Fall",
+      "notes": "Before first freeze"
+    },
+    {
+      "id": "fall-04",
+      "category": "Seasonal - Fall",
+      "name": "Service furnace",
+      "freqDays": 365,
+      "season": "Fall",
+      "notes": "Before heating season"
+    },
+    {
+      "id": "fall-05",
+      "category": "Seasonal - Fall",
+      "name": "Check weatherstripping and caulk",
+      "freqDays": 365,
+      "season": "Fall",
+      "notes": "Seal drafts before winter"
+    },
+    {
+      "id": "fall-06",
+      "category": "Seasonal - Fall",
+      "name": "Store outdoor furniture",
+      "freqDays": 365,
+      "season": "Fall",
+      "notes": "Clean and cover or store"
+    },
+    {
+      "id": "fall-07",
+      "category": "Seasonal - Fall",
+      "name": "Winterize lawn mower",
+      "freqDays": 365,
+      "season": "Fall",
+      "notes": "Stabilize fuel, change oil"
+    },
+    {
+      "id": "fall-08",
+      "category": "Seasonal - Fall",
+      "name": "Winterize sprinkler system",
+      "freqDays": 365,
+      "season": "Fall",
+      "notes": "Blow out lines before freeze"
+    },
+    {
+      "id": "fall-09",
+      "category": "Seasonal - Fall",
+      "name": "Rake or mulch leaves",
+      "freqDays": 7,
+      "season": "Fall",
+      "notes": "Weekly during peak leaf drop"
+    },
+    {
+      "id": "fall-10",
+      "category": "Seasonal - Fall",
+      "name": "Replace smoke and CO detector batteries",
+      "freqDays": 365,
+      "season": "Fall",
+      "notes": "Daylight saving time change"
+    },
+    {
+      "id": "fall-11",
+      "category": "Seasonal - Fall",
+      "name": "Check attic insulation",
+      "freqDays": 365,
+      "season": "Fall",
+      "notes": "Before cold weather"
+    },
+    {
+      "id": "fall-12",
+      "category": "Seasonal - Fall",
+      "name": "Test snow removal equipment",
+      "freqDays": 365,
+      "season": "Fall",
+      "notes": "Before first snow"
+    },
+    {
+      "id": "fall-13",
+      "category": "Seasonal - Fall",
+      "name": "Clean chimney and fireplace",
+      "freqDays": 365,
+      "season": "Fall",
+      "notes": "Before first fire of season"
+    },
+    {
+      "id": "winter-01",
+      "category": "Seasonal - Winter",
+      "name": "Monitor for ice dams on roof",
+      "freqDays": 0,
+      "season": "Winter",
+      "notes": "After heavy snow \u2014 look for icicles on gutters"
+    },
+    {
+      "id": "winter-02",
+      "category": "Seasonal - Winter",
+      "name": "Check attic for frost and ice",
+      "freqDays": 30,
+      "season": "Winter",
+      "notes": "Indicates insulation issue"
+    },
+    {
+      "id": "winter-03",
+      "category": "Seasonal - Winter",
+      "name": "Prevent ice buildup in gutters",
+      "freqDays": 0,
+      "season": "Winter",
+      "notes": "Use roof rake carefully"
+    },
+    {
+      "id": "winter-04",
+      "category": "Seasonal - Winter",
+      "name": "Check for drafts around windows",
+      "freqDays": 30,
+      "season": "Winter",
+      "notes": "Seal with rope caulk as needed"
+    },
+    {
+      "id": "winter-05",
+      "category": "Seasonal - Winter",
+      "name": "Test backup generator",
+      "freqDays": 30,
+      "season": "Winter",
+      "notes": "Run under load monthly"
+    },
+    {
+      "id": "winter-06",
+      "category": "Seasonal - Winter",
+      "name": "Change furnace filter",
+      "freqDays": 30,
+      "season": "Winter",
+      "notes": "Every 1-3 months \u2014 check monthly"
+    },
+    {
+      "id": "winter-07",
+      "category": "Seasonal - Winter",
+      "name": "Monitor basement for snow melt seepage",
+      "freqDays": 30,
+      "season": "Winter",
+      "notes": "After heavy snow or thaw"
+    },
+    {
+      "id": "winter-08",
+      "category": "Seasonal - Winter",
+      "name": "Maintain proper indoor humidity",
+      "freqDays": 0,
+      "season": "Winter",
+      "notes": "As needed \u2014 prevents dry air"
+    },
+    {
+      "id": "appliance-01",
+      "category": "Appliances",
+      "name": "Clean refrigerator coils",
+      "freqDays": 182,
+      "season": "Any",
+      "notes": "Extends fridge life, saves energy"
+    },
+    {
+      "id": "appliance-02",
+      "category": "Appliances",
+      "name": "Replace refrigerator water filter",
+      "freqDays": 182,
+      "season": "Any",
+      "notes": "Follow manufacturer schedule"
+    },
+    {
+      "id": "appliance-03",
+      "category": "Appliances",
+      "name": "Clean dishwasher filter",
+      "freqDays": 30,
+      "season": "Year-round",
+      "notes": "Removes food debris"
+    },
+    {
+      "id": "appliance-04",
+      "category": "Appliances",
+      "name": "Clean range hood filter",
+      "freqDays": 90,
+      "season": "Year-round",
+      "notes": "Grease buildup is a fire risk"
+    },
+    {
+      "id": "appliance-05",
+      "category": "Appliances",
+      "name": "Clean dryer vent lint trap",
+      "freqDays": 1,
+      "season": "Year-round",
+      "notes": "Before every load"
+    },
+    {
+      "id": "appliance-06",
+      "category": "Appliances",
+      "name": "Deep clean dryer vent duct",
+      "freqDays": 365,
+      "season": "Spring",
+      "notes": "Prevents fire"
+    },
+    {
+      "id": "appliance-07",
+      "category": "Appliances",
+      "name": "Clean oven",
+      "freqDays": 120,
+      "season": "Any",
+      "notes": "Self-clean or manual"
+    },
+    {
+      "id": "appliance-08",
+      "category": "Appliances",
+      "name": "Descale coffee maker",
+      "freqDays": 90,
+      "season": "Year-round",
+      "notes": "Vinegar cycle"
+    },
+    {
+      "id": "appliance-09",
+      "category": "Appliances",
+      "name": "Clean washing machine drum",
+      "freqDays": 30,
+      "season": "Year-round",
+      "notes": "Prevents mold and odors"
+    },
+    {
+      "id": "appliance-10",
+      "category": "Appliances",
+      "name": "Inspect washer hoses for wear",
+      "freqDays": 365,
+      "season": "Any",
+      "notes": "Look for bulges or cracks"
+    },
+    {
+      "id": "appliance-11",
+      "category": "Appliances",
+      "name": "Replace washer hoses",
+      "freqDays": 1461,
+      "season": "Any",
+      "notes": "Prevents burst hose floods"
+    },
+    {
+      "id": "appliance-12",
+      "category": "Appliances",
+      "name": "Clean garbage disposal",
+      "freqDays": 30,
+      "season": "Year-round",
+      "notes": "Ice cubes and citrus rinds"
+    },
+    {
+      "id": "appliance-13",
+      "category": "Appliances",
+      "name": "Vacuum refrigerator coils",
+      "freqDays": 182,
+      "season": "Any",
+      "notes": "Same as clean coils"
+    },
+    {
+      "id": "appliance-14",
+      "category": "Appliances",
+      "name": "Clean microwave interior",
+      "freqDays": 30,
+      "season": "Year-round",
+      "notes": "Wipe spills immediately"
+    },
+    {
+      "id": "appliance-15",
+      "category": "Appliances",
+      "name": "Defrost freezer",
+      "freqDays": 365,
+      "season": "Any",
+      "notes": "When ice exceeds 1/4 inch thick"
+    },
+    {
+      "id": "safety-01",
+      "category": "Safety & Security",
+      "name": "Test all smoke detectors",
+      "freqDays": 30,
+      "season": "Year-round",
+      "notes": "Walk through and test each one"
+    },
+    {
+      "id": "safety-02",
+      "category": "Safety & Security",
+      "name": "Test all CO detectors",
+      "freqDays": 30,
+      "season": "Year-round",
+      "notes": "Walk through and test each one"
+    },
+    {
+      "id": "safety-03",
+      "category": "Safety & Security",
+      "name": "Replace smoke detector batteries",
+      "freqDays": 365,
+      "season": "Fall",
+      "notes": "Daylight saving time change"
+    },
+    {
+      "id": "safety-04",
+      "category": "Safety & Security",
+      "name": "Replace smoke detector units",
+      "freqDays": 3650,
+      "season": "Any",
+      "notes": "Write install date on unit"
+    },
+    {
+      "id": "safety-05",
+      "category": "Safety & Security",
+      "name": "Check fire extinguisher pressure",
+      "freqDays": 30,
+      "season": "Year-round",
+      "notes": "Needle should be in green zone"
+    },
+    {
+      "id": "safety-06",
+      "category": "Safety & Security",
+      "name": "Replace fire extinguisher",
+      "freqDays": 4015,
+      "season": "Any",
+      "notes": "Expires even if never used"
+    },
+    {
+      "id": "safety-07",
+      "category": "Safety & Security",
+      "name": "Test security system sensors",
+      "freqDays": 30,
+      "season": "Year-round",
+      "notes": "Check door and window sensors"
+    },
+    {
+      "id": "safety-08",
+      "category": "Safety & Security",
+      "name": "Replace security sensor batteries",
+      "freqDays": 365,
+      "season": "Fall",
+      "notes": "Prevents false alarms"
+    },
+    {
+      "id": "safety-09",
+      "category": "Safety & Security",
+      "name": "Update emergency kit",
+      "freqDays": 365,
+      "season": "Spring",
+      "notes": "Check expiration dates on supplies"
+    },
+    {
+      "id": "safety-10",
+      "category": "Safety & Security",
+      "name": "Review home inventory for insurance",
+      "freqDays": 365,
+      "season": "Any",
+      "notes": "Update with new purchases"
+    },
+    {
+      "id": "safety-11",
+      "category": "Safety & Security",
+      "name": "Test garage door safety reverse",
+      "freqDays": 30,
+      "season": "Year-round",
+      "notes": "Place object in door path"
+    },
+    {
+      "id": "safety-12",
+      "category": "Safety & Security",
+      "name": "Check outdoor lighting and motion lights",
+      "freqDays": 30,
+      "season": "Year-round",
+      "notes": "Replace burnt bulbs"
+    },
+    {
+      "id": "safety-13",
+      "category": "Safety & Security",
+      "name": "Test video doorbell",
+      "freqDays": 30,
+      "season": "Year-round",
+      "notes": "Check camera view and chime"
+    },
+    {
+      "id": "foundation-01",
+      "category": "Foundation & Structure",
+      "name": "Inspect foundation for new cracks",
+      "freqDays": 365,
+      "season": "Spring",
+      "notes": "After freeze and thaw cycle"
+    },
+    {
+      "id": "foundation-02",
+      "category": "Foundation & Structure",
+      "name": "Check basement walls for moisture",
+      "freqDays": 30,
+      "season": "Year-round",
+      "notes": "After heavy rain especially"
+    },
+    {
+      "id": "foundation-03",
+      "category": "Foundation & Structure",
+      "name": "Inspect attic for roof leaks",
+      "freqDays": 182,
+      "season": "Spring/Fall",
+      "notes": "Look for water stains on rafters"
+    },
+    {
+      "id": "foundation-04",
+      "category": "Foundation & Structure",
+      "name": "Inspect crawl space",
+      "freqDays": 182,
+      "season": "Spring/Fall",
+      "notes": "Check vapor barrier, ventilation"
+    },
+    {
+      "id": "foundation-05",
+      "category": "Foundation & Structure",
+      "name": "Check for termites and pests",
+      "freqDays": 365,
+      "season": "Spring",
+      "notes": "Look for mud tubes, droppings"
+    },
+    {
+      "id": "foundation-06",
+      "category": "Foundation & Structure",
+      "name": "Schedule termite inspection",
+      "freqDays": 365,
+      "season": "Spring",
+      "notes": "Professional inspection"
+    },
+    {
+      "id": "foundation-07",
+      "category": "Foundation & Structure",
+      "name": "Check grading around foundation",
+      "freqDays": 365,
+      "season": "Spring",
+      "notes": "Should slope away from house"
+    },
+    {
+      "id": "foundation-08",
+      "category": "Foundation & Structure",
+      "name": "Inspect porch and steps for rot",
+      "freqDays": 365,
+      "season": "Spring",
+      "notes": "Safety hazard if rotting"
+    },
+    {
+      "id": "foundation-09",
+      "category": "Foundation & Structure",
+      "name": "Check retaining walls",
+      "freqDays": 365,
+      "season": "Spring",
+      "notes": "Look for bulging or cracking"
+    },
+    {
+      "id": "foundation-10",
+      "category": "Foundation & Structure",
+      "name": "Inspect chimney structure",
+      "freqDays": 365,
+      "season": "Fall",
+      "notes": "Check mortar, bricks, crown"
+    }
+  ]
+}
