@@ -10,7 +10,7 @@ workflows:
         APP_NAME: HomeDue
         APP_VERSION: 1.0
         # BUILD_NUMBER is auto-incremented by Codemagic
-      node: latest
+      node: 22
       xcode: latest
       cocoapods: default
 

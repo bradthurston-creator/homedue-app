@@ -11,11 +11,7 @@ class HomeDueDB {
 
     async init() {
         try {
-            if (window.capacitorSQLite) {
-                await this._initSQLite();
-            } else {
-                this._loadStore();
-            }
+            this._loadStore();
             if (this.store.tasks.length === 0) await this._seed();
             this.ready = true;
             return true;
@@ -109,12 +105,10 @@ class HomeDueDB {
         return { total: this.store.tasks.length, active: this.store.userTasks.filter(u=>u.active).length, completed: this.store.completedLog.length };
     }
 
-    // --- Completion History ---
     async getCompletionHistory(limit = 50) {
         return this.store.completedLog.slice(-limit).reverse();
     }
 
-    // --- Contractors ---
     async saveContractor(taskId, name, phone) {
         const existing = this.store.userTasks.findIndex(u => u.task_id === taskId);
         if (existing >= 0) { this.store.userTasks[existing].contractor_name = name; this.store.userTasks[existing].contractor_phone = phone; }
@@ -126,7 +120,6 @@ class HomeDueDB {
 
     async getContractors() { return this.store.contractors.sort((a,b)=>a.lastUsed<b.lastUsed?1:-1); }
 
-    // --- Equipment / Manuals ---
     async addEquipment(item) {
         const eq = { id: Date.now().toString(), name: item.name, brand: item.brand || '', model: item.model || '', serial: item.serial || '', purchaseDate: item.purchaseDate || '', warrantyYears: item.warrantyYears || 0, notes: item.notes || '', manualPhotoPaths: item.manualPhotoPaths || [], createdDate: new Date().toISOString().split('T')[0] };
         this.store.equipment.push(eq);
@@ -148,7 +141,6 @@ class HomeDueDB {
         if (eq) { eq.manualPhotoPaths.push(photoPath); this._saveStore(); }
     }
 
-    // --- Backup ---
     async exportBackup() { return { version:'1.0', exported:new Date().toISOString(), tasks:this.store.tasks, userTasks:this.store.userTasks, completionLog:this.store.completedLog, contractors:this.store.contractors, equipment:this.store.equipment }; }
 
     async importBackup(data) {
