@@ -30,6 +30,16 @@ workflows:
           sed -i '' 's/IPHONEOS_DEPLOYMENT_TARGET = 13.5;/IPHONEOS_DEPLOYMENT_TARGET = 16.0;/g' ios/App/App.xcodeproj/project.pbxproj
           sed -i '' "s/platform :ios, '13.0'/platform :ios, '16.0'/g" ios/App/Podfile
 
+      - name: Set up code signing
+        script: |
+          keychain initialize
+          app-store-connect fetch-signing-files $APP_ID --type IOS_APP_STORE --create --certificate-key @env:CERTIFICATE_PRIVATE_KEY
+          keychain add-certificates
+          xcode-project use-profiles
+          mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
+          cp "$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles/"*.mobileprovision "$HOME/Library/MobileDevice/Provisioning Profiles/" 2>/dev/null || true
+          echo "Code signing setup complete"
+
       - name: Sync Capacitor with iOS
         script: npx cap sync ios
 
@@ -43,20 +53,6 @@ workflows:
           echo "Setting version $APP_VERSION ($BUILD_NUM)"
           sed -i '' "s/MARKETING_VERSION = [^;]*;/MARKETING_VERSION = $APP_VERSION;/g" ios/App/App.xcodeproj/project.pbxproj
           sed -i '' "s/CURRENT_PROJECT_VERSION = [^;]*;/CURRENT_PROJECT_VERSION = $BUILD_NUM;/g" ios/App/App.xcodeproj/project.pbxproj
-
-      - name: Set up code signing
-        script: |
-          keychain initialize
-          # Download BOTH development and distribution profiles
-          app-store-connect fetch-signing-files $APP_ID --type IOS_APP_DEVELOPMENT --create --certificate-key @env:CERTIFICATE_PRIVATE_KEY
-          app-store-connect fetch-signing-files $APP_ID --type IOS_APP_STORE --create --certificate-key @env:CERTIFICATE_PRIVATE_KEY
-          keychain add-certificates
-          # Use xcode-project to configure project for manual signing
-          xcode-project use-profiles
-          # Copy profiles to MobileDevice
-          mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
-          cp "$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles/"*.mobileprovision "$HOME/Library/MobileDevice/Provisioning Profiles/" 2>/dev/null || true
-          echo "Code signing setup complete"
 
       - name: Build iOS app
         script: |
@@ -72,21 +68,10 @@ workflows:
       - name: Export IPA
         script: |
           mkdir -p /tmp/ipa
-          PROFILE_UUID=$(cat /tmp/homedue_profile_uuid.txt 2>/dev/null || echo "")
-          PROFILE_NAME=$(cat /tmp/homedue_profile_name.txt 2>/dev/null || echo "")
-          echo "Exporting with profile: $PROFILE_NAME ($PROFILE_UUID)"
-          /usr/libexec/PlistBuddy -x \
-            -c "Add :method string app-store-connect" \
-            -c "Add :teamID string DN52659LL2" \
-            -c "Add :compileBitcode bool false" \
-            -c "Add :signingStyle string manual" \
-            -c "Add :provisioningProfiles dict" \
-            -c "Add :provisioningProfiles:${APP_ID} string $(cat /tmp/homedue_profile_name.txt)" \
-            /tmp/exportOptions.plist 2>/dev/null
           xcodebuild -exportArchive \
             -archivePath /tmp/xcarchive/HomeDue.xcarchive \
             -exportPath /tmp/ipa \
-            -exportOptionsPlist /tmp/exportOptions.plist
+            -exportOptionsPlist /Users/builder/export_options.plist
 
     artifacts:
       - /tmp/xcarchive/*.xcarchive
