@@ -30,6 +30,9 @@ workflows:
           sed -i '' 's/IPHONEOS_DEPLOYMENT_TARGET = 13.5;/IPHONEOS_DEPLOYMENT_TARGET = 16.0;/g' ios/App/App.xcodeproj/project.pbxproj
           sed -i '' "s/platform :ios, '13.0'/platform :ios, '16.0'/g" ios/App/Podfile
 
+      - name: Sync Capacitor with iOS
+        script: npx cap sync ios
+
       - name: Set up code signing
         script: |
           keychain initialize
@@ -39,9 +42,7 @@ workflows:
           mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
           cp "$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles/"*.mobileprovision "$HOME/Library/MobileDevice/Provisioning Profiles/" 2>/dev/null || true
           echo "Code signing setup complete"
-
-      - name: Sync Capacitor with iOS
-        script: npx cap sync ios
+          cd ios/App && pod install --repo-update 2>/dev/null || true
 
       - name: Configure project
         script: |
@@ -57,6 +58,7 @@ workflows:
       - name: Build iOS app
         script: |
           cd ios/App
+          rm -rf "$HOME/Library/Developer/Xcode/DerivedData/App-dauaqfqrctuewxfmikobeghbofmz" 2>/dev/null || true
           xcodebuild -project App.xcodeproj \
             -scheme App \
             -sdk iphoneos \
