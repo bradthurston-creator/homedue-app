@@ -66,13 +66,37 @@ workflows:
 
       - name: Export IPA with signing
         script: |
+          # Find the provisioning profile for our bundle ID
+          PROFILE_DIR="$HOME/Library/MobileDevice/Provisioning Profiles"
+          if [ ! -d "$PROFILE_DIR" ] || [ -z "$(ls "$PROFILE_DIR"/*.mobileprovision 2>/dev/null)" ]; then
+            PROFILE_DIR="$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles"
+          fi
+          PROFILE_PATH=""
+          for f in "$PROFILE_DIR"/*.mobileprovision; do
+            [ -f "$f" ] || continue
+            if security cms -D -i "$f" 2>/dev/null | grep -q "$APP_ID"; then
+              PROFILE_PATH="$f"
+              echo "Found profile: $f"
+              break
+            fi
+          done
+          if [ -z "$PROFILE_PATH" ]; then
+            echo "ERROR: No provisioning profile found for $APP_ID"
+            exit 1
+          fi
+          # Extract profile name
+          PROFILE_NAME=$(security cms -D -i "$PROFILE_PATH" 2>/dev/null | plutil -extract Name xml1 - -o - 2>/dev/null | plutil -convert json -o - - 2>/dev/null | python3 -c "import sys,json; print(json.load(sys.stdin))")
+          echo "Profile name: $PROFILE_NAME"
+          # Generate export options with explicit profile reference
           /usr/libexec/PlistBuddy -c "Clear dict" /tmp/export.plist 2>/dev/null || true
           /usr/libexec/PlistBuddy -c "Add method string app-store" /tmp/export.plist
           /usr/libexec/PlistBuddy -c "Add teamID string DN52659LL2" /tmp/export.plist
           /usr/libexec/PlistBuddy -c "Add signingStyle string manual" /tmp/export.plist
+          /usr/libexec/PlistBuddy -c "Add provisioningProfiles dict" /tmp/export.plist
+          /usr/libexec/PlistBuddy -c "Add provisioningProfiles:$APP_ID string $PROFILE_NAME" /tmp/export.plist
           /usr/libexec/PlistBuddy -c "Add uploadSymbols bool true" /tmp/export.plist
           mkdir -p /tmp/ipa
-          echo "Exporting IPA with manual signing..."
+          echo "Exporting IPA..."
           xcodebuild -exportArchive \
             -archivePath /tmp/xcarchive/HomeDue.xcarchive \
             -exportPath /tmp/ipa \
