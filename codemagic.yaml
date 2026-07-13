@@ -49,27 +49,31 @@ workflows:
           keychain initialize
           app-store-connect fetch-signing-files $APP_ID --type IOS_APP_STORE --create --certificate-key @env:CERTIFICATE_PRIVATE_KEY
           keychain add-certificates
-          xcode-project use-profiles --project ios/App/App.xcodeproj
-          echo "Code signing setup complete"
+          echo "Signing files ready (keeping project in Automatic signing mode)"
 
-      - name: Build iOS app
+      - name: Build iOS app (workspace + automatic signing)
         script: |
           cd ios/App
-          xcodebuild -project App.xcodeproj \
+          xcodebuild -workspace App.xcworkspace \
             -scheme App \
             -sdk iphoneos \
             -configuration Release \
             -archivePath /tmp/xcarchive/HomeDue.xcarchive \
             DEVELOPMENT_TEAM=DN52659LL2 \
+            -allowProvisioningUpdates \
             archive
 
       - name: Export IPA
         script: |
+          /usr/libexec/PlistBuddy -c "Add method string app-store" /tmp/export.plist 2>/dev/null || /usr/libexec/PlistBuddy -c "Set method app-store" /tmp/export.plist
+          /usr/libexec/PlistBuddy -c "Add teamID string DN52659LL2" /tmp/export.plist 2>/dev/null || true
+          /usr/libexec/PlistBuddy -c "Add signingStyle string automatic" /tmp/export.plist 2>/dev/null || true
+          /usr/libexec/PlistBuddy -c "Add uploadSymbols bool true" /tmp/export.plist 2>/dev/null || true
           mkdir -p /tmp/ipa
           xcodebuild -exportArchive \
             -archivePath /tmp/xcarchive/HomeDue.xcarchive \
             -exportPath /tmp/ipa \
-            -exportOptionsPlist /Users/builder/export_options.plist
+            -exportOptionsPlist /tmp/export.plist
 
     artifacts:
       - /tmp/xcarchive/*.xcarchive
