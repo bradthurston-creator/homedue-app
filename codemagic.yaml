@@ -108,12 +108,9 @@ workflows:
           SIGN_IDENTITY=$(security find-identity -v -p codesigning 2>&1 | grep "iPhone Distribution" | head -1 | sed 's/.*"\(.*\)".*/\1/')
           echo "Signing identity: $SIGN_IDENTITY"
 
-          # Extract entitlements from the provisioning profile
+          # Extract entitlements from the provisioning profile (as proper XML plist)
           security cms -D -i /tmp/app.mobileprovision 2>/dev/null > /tmp/profile.plist
-          /usr/libexec/PlistBuddy -c "Print Entitlements" /tmp/profile.plist 2>/dev/null > /tmp/ipa-entitlements.plist
-          # Fix the application-identifier prefix (convert Team Prefix format)
-          TEAM_ID=$(/usr/libexec/PlistBuddy -c "Print Entitlements:application-identifier" /tmp/profile.plist 2>/dev/null | sed 's/\.com.*//')
-          echo "Team ID from profile: $TEAM_ID"
+          plutil -extract Entitlements xml1 /tmp/profile.plist -o /tmp/ipa-entitlements.plist 2>&1
           echo "Extracted entitlements:"
           cat /tmp/ipa-entitlements.plist
 
