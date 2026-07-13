@@ -24,8 +24,10 @@ workflows:
       - name: Install npm dependencies
         script: npm install --legacy-peer-deps
 
-      - name: Patch iOS deployment target
+      - name: Add iOS platform
         script: |
+          rm -rf ios
+          npx cap add ios
           sed -i '' 's/IPHONEOS_DEPLOYMENT_TARGET = 13.0;/IPHONEOS_DEPLOYMENT_TARGET = 16.0;/g' ios/App/App.xcodeproj/project.pbxproj
           sed -i '' 's/IPHONEOS_DEPLOYMENT_TARGET = 13.5;/IPHONEOS_DEPLOYMENT_TARGET = 16.0;/g' ios/App/App.xcodeproj/project.pbxproj
           sed -i '' "s/platform :ios, '13.0'/platform :ios, '16.0'/g" ios/App/Podfile
@@ -33,16 +35,8 @@ workflows:
       - name: Sync Capacitor with iOS
         script: npx cap sync ios
 
-      - name: Set up code signing
-        script: |
-          keychain initialize
-          app-store-connect fetch-signing-files $APP_ID --type IOS_APP_STORE --create --certificate-key @env:CERTIFICATE_PRIVATE_KEY
-          keychain add-certificates
-          xcode-project use-profiles
-          mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
-          cp "$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles/"*.mobileprovision "$HOME/Library/MobileDevice/Provisioning Profiles/" 2>/dev/null || true
-          echo "Code signing setup complete"
-          cd ios/App && pod install --repo-update 2>/dev/null || true
+      - name: Generate shared scheme
+        script: bash scripts/gen-scheme.sh ios/App/App.xcodeproj/project.pbxproj ios/App/App.xcodeproj/xcshareddata/xcschemes
 
       - name: Configure project
         script: |
@@ -55,10 +49,19 @@ workflows:
           sed -i '' "s/MARKETING_VERSION = [^;]*;/MARKETING_VERSION = $APP_VERSION;/g" ios/App/App.xcodeproj/project.pbxproj
           sed -i '' "s/CURRENT_PROJECT_VERSION = [^;]*;/CURRENT_PROJECT_VERSION = $BUILD_NUM;/g" ios/App/App.xcodeproj/project.pbxproj
 
+      - name: Set up code signing
+        script: |
+          keychain initialize
+          app-store-connect fetch-signing-files $APP_ID --type IOS_APP_STORE --create --certificate-key @env:CERTIFICATE_PRIVATE_KEY
+          keychain add-certificates
+          xcode-project use-profiles
+          mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
+          cp "$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles/"*.mobileprovision "$HOME/Library/MobileDevice/Provisioning Profiles/" 2>/dev/null || true
+          echo "Code signing setup complete"
+
       - name: Build iOS app
         script: |
           cd ios/App
-          rm -rf "$HOME/Library/Developer/Xcode/DerivedData/App-dauaqfqrctuewxfmikobeghbofmz" 2>/dev/null || true
           xcodebuild -project App.xcodeproj \
             -scheme App \
             -sdk iphoneos \
