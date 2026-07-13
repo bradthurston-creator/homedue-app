@@ -54,9 +54,7 @@ workflows:
           keychain initialize
           app-store-connect fetch-signing-files $APP_ID --type IOS_APP_STORE --create --certificate-key @env:CERTIFICATE_PRIVATE_KEY
           keychain add-certificates
-          xcode-project use-profiles
-          mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
-          cp "$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles/"*.mobileprovision "$HOME/Library/MobileDevice/Provisioning Profiles/" 2>/dev/null || true
+          sed -i '' "s/DEVELOPMENT_TEAM = [^;]*;/DEVELOPMENT_TEAM = DN52659LL2;/g" ios/App/App.xcodeproj/project.pbxproj
           echo "Code signing setup complete"
 
       - name: Build iOS app
