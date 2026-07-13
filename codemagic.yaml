@@ -56,13 +56,6 @@ workflows:
           keychain add-certificates
           mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
           cp "$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles/"*.mobileprovision "$HOME/Library/MobileDevice/Provisioning Profiles/" 2>/dev/null || true
-          PROFILE_FILE=$(ls "$HOME/Library/MobileDevice/Provisioning Profiles/"*.mobileprovision 2>/dev/null | head -1)
-          if [ -n "$PROFILE_FILE" ]; then
-            PROFILE_NAME=$(security cms -D -i "$PROFILE_FILE" 2>/dev/null | plutil -extract Name raw - 2>/dev/null || echo "")
-            echo "Profile: $PROFILE_NAME"
-            python3 scripts/patch-signing.py ios/App/App.xcodeproj/project.pbxproj "$PROFILE_NAME"
-            echo "$PROFILE_NAME" > /tmp/homedue_profile_name.txt
-          fi
           echo "Code signing setup complete"
 
       - name: Build iOS app
@@ -73,25 +66,24 @@ workflows:
             -sdk iphoneos \
             -configuration Release \
             -archivePath /tmp/xcarchive/HomeDue.xcarchive \
+            -allowProvisioningUpdates \
             DEVELOPMENT_TEAM=DN52659LL2 \
             archive
 
       - name: Export IPA
         script: |
           mkdir -p /tmp/ipa
-          PROFILE_NAME=$(cat /tmp/homedue_profile_name.txt 2>/dev/null || echo "")
           /usr/libexec/PlistBuddy -x \
             -c "Add :method string app-store-connect" \
             -c "Add :teamID string DN52659LL2" \
             -c "Add :compileBitcode bool false" \
-            -c "Add :signingStyle string manual" \
-            -c "Add :provisioningProfiles dict" \
-            -c "Add :provisioningProfiles:${APP_ID} string $PROFILE_NAME" \
+            -c "Add :signingStyle string automatic" \
             /tmp/exportOptions.plist 2>/dev/null
           xcodebuild -exportArchive \
             -archivePath /tmp/xcarchive/HomeDue.xcarchive \
             -exportPath /tmp/ipa \
-            -exportOptionsPlist /tmp/exportOptions.plist
+            -exportOptionsPlist /tmp/exportOptions.plist \
+            -allowProvisioningUpdates
 
     artifacts:
       - /tmp/xcarchive/*.xcarchive
