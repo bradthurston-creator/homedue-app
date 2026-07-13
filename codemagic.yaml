@@ -105,6 +105,8 @@ workflows:
 
           cp /tmp/app.mobileprovision "$APP_PATH/embedded.mobileprovision"
 
+          # Get the exact signing identity (distribution cert)
+          security find-identity -v -p codesigning 2>&1
           SIGN_IDENTITY=$(security find-identity -v -p codesigning 2>&1 | grep "iPhone Distribution" | head -1 | sed 's/.*"\(.*\)".*/\1/')
           echo "Signing identity: $SIGN_IDENTITY"
 
@@ -114,19 +116,26 @@ workflows:
           echo "Extracted entitlements:"
           cat /tmp/ipa-entitlements.plist
 
-          # Sign frameworks and dylibs
+          # Sign all frameworks and dylibs with timestamp and hardened runtime
           find "$APP_PATH" -name "*.framework" -d | while read fw; do
-            codesign -f -s "$SIGN_IDENTITY" --generate-entitlement-der "$fw" 2>&1
+            codesign -f -s "$SIGN_IDENTITY" --timestamp --options runtime --generate-entitlement-der "$fw" 2>&1
           done
           find "$APP_PATH" -name "*.dylib" | while read lib; do
-            codesign -f -s "$SIGN_IDENTITY" "$lib" 2>&1
+            codesign -f -s "$SIGN_IDENTITY" --timestamp "$lib" 2>&1
           done
 
-          # Sign main app with profile-extracted entitlements
-          codesign -f -s "$SIGN_IDENTITY" --entitlements /tmp/ipa-entitlements.plist --generate-entitlement-der "$APP_PATH" 2>&1
+          # Sign main app with profile-extracted entitlements, timestamp, hardened runtime
+          codesign -f -s "$SIGN_IDENTITY" \
+            --entitlements /tmp/ipa-entitlements.plist \
+            --timestamp \
+            --options runtime \
+            --generate-entitlement-der \
+            "$APP_PATH" 2>&1
 
-          # Verify
-          codesign -v "$APP_PATH" 2>&1 && echo "SIGNATURE VALID" || echo "SIGNATURE INVALID"
+          # Verify signature
+          echo "=== Signature verification ==="
+          codesign -v --strict "$APP_PATH" 2>&1 && echo "SIGNATURE VALID" || echo "SIGNATURE INVALID"
+          codesign -dvvv "$APP_PATH" 2>&1 | head -10
 
           # Package IPA
           mkdir -p "$IPA_DIR/Payload"
