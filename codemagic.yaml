@@ -59,9 +59,9 @@ workflows:
           ls -la /tmp/profiles/ 2>&1
           echo "=== Files in /tmp/certs ==="
           ls -la /tmp/certs/ 2>&1
-          keychain add-certificates --certificates-dir /tmp/certs 2>&1
+          keychain add-certificates --certificate /tmp/certs/*.p12 2>&1
           echo "=== Keychain identities ==="
-          security find-identity -v -p ios 2>&1
+          security find-identity -v -p codesigning 2>&1
 
       - name: Save profile location
         script: |
@@ -105,7 +105,7 @@ workflows:
 
           cp /tmp/app.mobileprovision "$APP_PATH/embedded.mobileprovision"
 
-          SIGN_IDENTITY=$(security find-identity -v -p ios 2>&1 | grep "iPhone Distribution" | head -1 | sed 's/.*"\(.*\)".*/\1/')
+          SIGN_IDENTITY=$(security find-identity -v -p codesigning 2>&1 | grep "iPhone Distribution" | head -1 | sed 's/.*"\(.*\)".*/\1/')
           echo "Signing identity: $SIGN_IDENTITY"
 
           find "$APP_PATH" -name "*.framework" -d | while read fw; do
