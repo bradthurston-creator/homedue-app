@@ -5,12 +5,15 @@ workflows:
     instance_type: mac_mini_m2
 
     environment:
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.homedue.app
       vars:
         APP_ID: com.homedue.app
         APP_NAME: HomeDue
         APP_VERSION: 1.0
-        APP_STORE_CONNECT_ISSUER_ID: fa233451-1f0a-4677-baac-21185e4cb1ec
-        APP_STORE_CONNECT_KEY_IDENTIFIER: 2NBS93SRAY
+        XCODE_WORKSPACE: "ios/App/App.xcworkspace"
+        XCODE_SCHEME: "App"
       groups:
         - apple_credentials
       node: 22
@@ -46,24 +49,15 @@ workflows:
 
       - name: Set up code signing
         script: |
-          set -x
           keychain initialize
-          echo "=== Attempting to fetch signing files ==="
-          app-store-connect fetch-signing-files $APP_ID --type IOS_APP_STORE --create --certificate-key @env:CERTIFICATE_PRIVATE_KEY 2>&1
-          FETCH_RESULT=$?
-          echo "fetch-signing-files exit code: $FETCH_RESULT"
-          echo "=== Checking profile directories ==="
-          echo "Legacy path:"
-          ls -la "$HOME/Library/MobileDevice/Provisioning Profiles/" 2>&1 || echo "(not found or empty)"
-          echo "Xcode path:"
-          ls -la "$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles/" 2>&1 || echo "(not found or empty)"
-          echo "=== Setting up certificates ==="
-          keychain add-certificates 2>&1
-          ADD_RESULT=$?
-          echo "add-certificates exit code: $ADD_RESULT"
-          echo "=== Listing identities ==="
-          security find-identity -v -p ios 2>&1
-          echo "Signing setup complete"
+          echo "=== Profile dirs before use-profiles ==="
+          ls -la "$HOME/Library/MobileDevice/Provisioning Profiles/" 2>&1 || echo "no legacy dir"
+          ls -la "$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles/" 2>&1 || echo "no xcode dir"
+          # use-profiles will download profiles via ios_signing integration
+          xcode-project use-profiles 2>&1
+          echo "=== Profile dirs after use-profiles ==="
+          ls -la "$HOME/Library/MobileDevice/Provisioning Profiles/" 2>&1 || echo "no legacy dir"
+          ls -la "$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles/" 2>&1 || echo "no xcode dir"
 
       - name: Build unsigned archive
         script: |
@@ -78,65 +72,34 @@ workflows:
             CODE_SIGNING_ALLOWED=NO \
             archive
 
-      - name: Manually sign and package IPA
+      - name: Export IPA
         script: |
-          ARCHIVE=/tmp/xcarchive/HomeDue.xcarchive
-          APP_PATH="$ARCHIVE/Products/Applications/App.app"
-          IPA_DIR=/tmp/ipa
-          mkdir -p "$IPA_DIR"
-
-          echo "=== Finding provisioning profile ==="
-          PROFILE_DIR="$HOME/Library/MobileDevice/Provisioning Profiles"
-          [ -d "$PROFILE_DIR" ] || PROFILE_DIR="$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles"
-          PROFILE_PATH=""
-          for f in "$PROFILE_DIR"/*.mobileprovision; do
+          echo "=== Checking profiles for export ==="
+          ls -la "$HOME/Library/MobileDevice/Provisioning Profiles/" 2>&1 || echo "no legacy dir"
+          ls -la "$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles/" 2>&1 || echo "no xcode dir"
+          for f in "$HOME/Library/MobileDevice/Provisioning Profiles"/*.mobileprovision; do
             [ -f "$f" ] || continue
-            if security cms -D -i "$f" 2>/dev/null | grep -q "$APP_ID"; then
-              PROFILE_PATH="$f"
-              echo "Profile: $f"
-              break
-            fi
+            echo "Profile: $(basename $f)"
+            security cms -D -i "$f" 2>/dev/null | grep -A1 '<key>Name</key>' | tail -1 || true
           done
-          if [ -z "$PROFILE_PATH" ]; then
-            echo "ERROR: No profile found for $APP_ID"
-            ls -la "$PROFILE_DIR"/ 2>/dev/null || echo "No profiles dir"
-            exit 1
-          fi
-
-          echo "=== Copying provisioning profile into app bundle ==="
-          cp "$PROFILE_PATH" "$APP_PATH/embedded.mobileprovision"
-
-          echo "=== Listing available signing identities ==="
-          security find-identity -v -p ios || echo "No identities found"
-
-          echo "=== Extracting entitlements ==="
-          codesign -d --entitlements :- "$APP_PATH" 2>/dev/null > /tmp/entitlements.plist || echo "No existing entitlements, using empty"
-          if [ ! -s /tmp/entitlements.plist ]; then
-            /usr/libexec/PlistBuddy -c "Clear dict" /tmp/entitlements.plist 2>/dev/null || true
-          fi
-
-          echo "=== Signing all frameworks and dylibs ==="
-          find "$APP_PATH" -name "*.framework" -d | while read fw; do
-            echo "Signing framework: $fw"
-            codesign -f -s "iPhone Distribution" --generate-entitlement-der "$fw" 2>&1 || echo "Failed: $fw"
+          for f in "$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles"/*.mobileprovision; do
+            [ -f "$f" ] || continue
+            echo "Profile: $(basename $f)"
+            security cms -D -i "$f" 2>/dev/null | grep -A1 '<key>Name</key>' | tail -1 || true
           done
-          find "$APP_PATH" -name "*.dylib" -d | while read lib; do
-            echo "Signing dylib: $lib"
-            codesign -f -s "iPhone Distribution" "$lib" 2>&1 || echo "Failed: $lib"
-          done
-
-          echo "=== Signing main app bundle ==="
-          codesign -f -s "iPhone Distribution" --entitlements /tmp/entitlements.plist --generate-entitlement-der "$APP_PATH" 2>&1
-
-          echo "=== Verifying signature ==="
-          codesign -v "$APP_PATH" 2>&1 && echo "Signature valid" || echo "Signature invalid"
-
-          echo "=== Creating IPA ==="
-          mkdir -p "$IPA_DIR/Payload"
-          cp -R "$APP_PATH" "$IPA_DIR/Payload/"
-          cd "$IPA_DIR"
-          zip -qr App.ipa Payload/
-          echo "=== IPA created at $IPA_DIR/App.ipa ==="
+          # Generate export options
+          /usr/libexec/PlistBuddy -c "Clear dict" /tmp/export.plist 2>/dev/null || true
+          /usr/libexec/PlistBuddy -c "Add method string app-store" /tmp/export.plist
+          /usr/libexec/PlistBuddy -c "Add teamID string DN52659LL2" /tmp/export.plist
+          /usr/libexec/PlistBuddy -c "Add signingStyle string automatic" /tmp/export.plist
+          /usr/libexec/PlistBuddy -c "Add uploadSymbols bool true" /tmp/export.plist
+          mkdir -p /tmp/ipa
+          echo "Exporting IPA..."
+          xcodebuild -exportArchive \
+            -archivePath /tmp/xcarchive/HomeDue.xcarchive \
+            -exportPath /tmp/ipa \
+            -exportOptionsPlist /tmp/export.plist \
+            -allowProvisioningUpdates 2>&1
 
     artifacts:
       - /tmp/xcarchive/*.xcarchive
