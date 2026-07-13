@@ -46,10 +46,24 @@ workflows:
 
       - name: Set up code signing
         script: |
+          set -x
           keychain initialize
-          app-store-connect fetch-signing-files $APP_ID --type IOS_APP_STORE --create --certificate-key @env:CERTIFICATE_PRIVATE_KEY
-          keychain add-certificates
-          echo "Signing files ready"
+          echo "=== Attempting to fetch signing files ==="
+          app-store-connect fetch-signing-files $APP_ID --type IOS_APP_STORE --create --certificate-key @env:CERTIFICATE_PRIVATE_KEY 2>&1
+          FETCH_RESULT=$?
+          echo "fetch-signing-files exit code: $FETCH_RESULT"
+          echo "=== Checking profile directories ==="
+          echo "Legacy path:"
+          ls -la "$HOME/Library/MobileDevice/Provisioning Profiles/" 2>&1 || echo "(not found or empty)"
+          echo "Xcode path:"
+          ls -la "$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles/" 2>&1 || echo "(not found or empty)"
+          echo "=== Setting up certificates ==="
+          keychain add-certificates 2>&1
+          ADD_RESULT=$?
+          echo "add-certificates exit code: $ADD_RESULT"
+          echo "=== Listing identities ==="
+          security find-identity -v -p ios 2>&1
+          echo "Signing setup complete"
 
       - name: Build unsigned archive
         script: |
