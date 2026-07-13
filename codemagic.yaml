@@ -47,19 +47,22 @@ workflows:
           sed -i '' "s/MARKETING_VERSION = [^;]*;/MARKETING_VERSION = $APP_VERSION;/g" ios/App/App.xcodeproj/project.pbxproj
           sed -i '' "s/CURRENT_PROJECT_VERSION = [^;]*;/CURRENT_PROJECT_VERSION = $BUILD_NUM;/g" ios/App/App.xcodeproj/project.pbxproj
 
-      - name: Set up code signing
+      - name: Download profiles (use-profiles), then revert to Automatic signing
         script: |
           keychain initialize
-          echo "=== Profile dirs before use-profiles ==="
-          ls -la "$HOME/Library/MobileDevice/Provisioning Profiles/" 2>&1 || echo "no legacy dir"
-          ls -la "$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles/" 2>&1 || echo "no xcode dir"
-          # use-profiles will download profiles via ios_signing integration
+          # First, run use-profiles to download the provisioning profile
+          # This sets Manual signing in pbxproj, which we revert below
           xcode-project use-profiles 2>&1
-          echo "=== Profile dirs after use-profiles ==="
-          ls -la "$HOME/Library/MobileDevice/Provisioning Profiles/" 2>&1 || echo "no legacy dir"
-          ls -la "$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles/" 2>&1 || echo "no xcode dir"
+          echo "=== Profile downloaded, now reverting pbxproj to Automatic ==="
+          # Revert the main app target back to Automatic signing
+          sed -i '' 's/CODE_SIGN_STYLE = Manual;/CODE_SIGN_STYLE = Automatic;/g' ios/App/App.xcodeproj/project.pbxproj
+          # Remove PROVISIONING_PROFILE_SPECIFIER from main app target
+          sed -i '' '/PROVISIONING_PROFILE_SPECIFIER/d' ios/App/App.xcodeproj/project.pbxproj
+          echo "=== Profiles on disk ==="
+          ls -la "$HOME/Library/MobileDevice/Provisioning Profiles/" 2>&1 || echo "no legacy"
+          ls -la "$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles/" 2>&1 || echo "no xcode"
 
-      - name: Build unsigned archive
+      - name: Build archive (unsigned, Capacitor-safe)
         script: |
           cd ios/App
           xcodebuild -workspace App.xcworkspace \
@@ -74,32 +77,36 @@ workflows:
 
       - name: Export IPA
         script: |
-          echo "=== Checking profiles for export ==="
-          ls -la "$HOME/Library/MobileDevice/Provisioning Profiles/" 2>&1 || echo "no legacy dir"
-          ls -la "$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles/" 2>&1 || echo "no xcode dir"
-          for f in "$HOME/Library/MobileDevice/Provisioning Profiles"/*.mobileprovision; do
-            [ -f "$f" ] || continue
-            echo "Profile: $(basename $f)"
-            security cms -D -i "$f" 2>/dev/null | grep -A1 '<key>Name</key>' | tail -1 || true
+          # Find the profile
+          PROFILE_FILE=""
+          for d in "$HOME/Library/MobileDevice/Provisioning Profiles" "$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles"; do
+            for f in "$d"/*.mobileprovision; do
+              [ -f "$f" ] || continue
+              PROFILE_FILE="$f"
+              break 2
+            done
           done
-          for f in "$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles"/*.mobileprovision; do
-            [ -f "$f" ] || continue
-            echo "Profile: $(basename $f)"
-            security cms -D -i "$f" 2>/dev/null | grep -A1 '<key>Name</key>' | tail -1 || true
-          done
-          # Generate export options
+          echo "Using profile: $PROFILE_FILE"
+          if [ -z "$PROFILE_FILE" ]; then
+            echo "No profile found!"
+            exit 1
+          fi
+          # Extract profile name
+          PROFILE_NAME=$(security cms -D -i "$PROFILE_FILE" 2>/dev/null | awk '/<key>Name<\/key>/{getline; gsub(/<[^>]*>/,""); print}' | xargs)
+          echo "Profile name: $PROFILE_NAME"
+          # Build export plist
           /usr/libexec/PlistBuddy -c "Clear dict" /tmp/export.plist 2>/dev/null || true
           /usr/libexec/PlistBuddy -c "Add method string app-store" /tmp/export.plist
           /usr/libexec/PlistBuddy -c "Add teamID string DN52659LL2" /tmp/export.plist
-          /usr/libexec/PlistBuddy -c "Add signingStyle string automatic" /tmp/export.plist
+          /usr/libexec/PlistBuddy -c "Add signingStyle string manual" /tmp/export.plist
+          /usr/libexec/PlistBuddy -c "Add provisioningProfiles dict" /tmp/export.plist
+          /usr/libexec/PlistBuddy -c "Add provisioningProfiles:$APP_ID string $PROFILE_NAME" /tmp/export.plist
           /usr/libexec/PlistBuddy -c "Add uploadSymbols bool true" /tmp/export.plist
           mkdir -p /tmp/ipa
-          echo "Exporting IPA..."
           xcodebuild -exportArchive \
             -archivePath /tmp/xcarchive/HomeDue.xcarchive \
             -exportPath /tmp/ipa \
-            -exportOptionsPlist /tmp/export.plist \
-            -allowProvisioningUpdates 2>&1
+            -exportOptionsPlist /tmp/export.plist
 
     artifacts:
       - /tmp/xcarchive/*.xcarchive
