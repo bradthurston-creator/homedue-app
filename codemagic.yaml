@@ -5,15 +5,10 @@ workflows:
     instance_type: mac_mini_m2
 
     environment:
-      ios_signing:
-        distribution_type: app_store
-        bundle_identifier: com.homedue.app
       vars:
         APP_ID: com.homedue.app
         APP_NAME: HomeDue
         APP_VERSION: 1.0
-        XCODE_WORKSPACE: "ios/App/App.xcworkspace"
-        XCODE_SCHEME: "App"
       groups:
         - apple_credentials
       node: 22
@@ -47,22 +42,45 @@ workflows:
           sed -i '' "s/MARKETING_VERSION = [^;]*;/MARKETING_VERSION = $APP_VERSION;/g" ios/App/App.xcodeproj/project.pbxproj
           sed -i '' "s/CURRENT_PROJECT_VERSION = [^;]*;/CURRENT_PROJECT_VERSION = $BUILD_NUM;/g" ios/App/App.xcodeproj/project.pbxproj
 
-      - name: Download profiles (use-profiles), then revert to Automatic signing
+      - name: Download provisioning profile
         script: |
+          set -x
+          mkdir -p /tmp/profiles
+          mkdir -p /tmp/certs
           keychain initialize
-          # First, run use-profiles to download the provisioning profile
-          # This sets Manual signing in pbxproj, which we revert below
-          xcode-project use-profiles 2>&1
-          echo "=== Profile downloaded, now reverting pbxproj to Automatic ==="
-          # Revert the main app target back to Automatic signing
-          sed -i '' 's/CODE_SIGN_STYLE = Manual;/CODE_SIGN_STYLE = Automatic;/g' ios/App/App.xcodeproj/project.pbxproj
-          # Remove PROVISIONING_PROFILE_SPECIFIER from main app target
-          sed -i '' '/PROVISIONING_PROFILE_SPECIFIER/d' ios/App/App.xcodeproj/project.pbxproj
-          echo "=== Profiles on disk ==="
-          ls -la "$HOME/Library/MobileDevice/Provisioning Profiles/" 2>&1 || echo "no legacy"
-          ls -la "$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles/" 2>&1 || echo "no xcode"
+          echo "=== Fetching signing files ==="
+          app-store-connect fetch-signing-files $APP_ID \
+            --type IOS_APP_STORE \
+            --create \
+            --profiles-dir /tmp/profiles \
+            --certificates-dir /tmp/certs 2>&1
+          echo "Exit code: $?"
+          echo "=== Files in /tmp/profiles ==="
+          ls -la /tmp/profiles/ 2>&1
+          echo "=== Files in /tmp/certs ==="
+          ls -la /tmp/certs/ 2>&1
+          keychain add-certificates --certificates-dir /tmp/certs 2>&1
+          echo "=== Keychain identities ==="
+          security find-identity -v -p ios 2>&1
 
-      - name: Build archive (unsigned, Capacitor-safe)
+      - name: Save profile location
+        script: |
+          PROFILE_FILE=""
+          for f in /tmp/profiles/*.mobileprovision; do
+            [ -f "$f" ] || continue
+            PROFILE_FILE="$f"
+            break
+          done
+          if [ -z "$PROFILE_FILE" ]; then
+            echo "ERROR: No profile downloaded!"
+            exit 1
+          fi
+          cp "$PROFILE_FILE" /tmp/app.mobileprovision
+          PROFILE_NAME=$(security cms -D -i /tmp/app.mobileprovision 2>/dev/null | awk '/<key>Name<\/key>/{getline; gsub(/<[^>]*>/,""); print}' | xargs)
+          echo "$PROFILE_NAME" > /tmp/profile_name.txt
+          echo "Saved profile: $PROFILE_NAME"
+
+      - name: Build unsigned archive
         script: |
           cd ios/App
           xcodebuild -workspace App.xcworkspace \
@@ -75,38 +93,41 @@ workflows:
             CODE_SIGNING_ALLOWED=NO \
             archive
 
-      - name: Export IPA
+      - name: Sign and package IPA
         script: |
-          # Find the profile
-          PROFILE_FILE=""
-          for d in "$HOME/Library/MobileDevice/Provisioning Profiles" "$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles"; do
-            for f in "$d"/*.mobileprovision; do
-              [ -f "$f" ] || continue
-              PROFILE_FILE="$f"
-              break 2
-            done
+          ARCHIVE=/tmp/xcarchive/HomeDue.xcarchive
+          APP_PATH="$ARCHIVE/Products/Applications/App.app"
+          IPA_DIR=/tmp/ipa
+          mkdir -p "$IPA_DIR"
+
+          PROFILE_NAME=$(cat /tmp/profile_name.txt)
+          echo "Using profile: $PROFILE_NAME"
+
+          cp /tmp/app.mobileprovision "$APP_PATH/embedded.mobileprovision"
+
+          SIGN_IDENTITY=$(security find-identity -v -p ios 2>&1 | grep "iPhone Distribution" | head -1 | sed 's/.*"\(.*\)".*/\1/')
+          echo "Signing identity: $SIGN_IDENTITY"
+
+          find "$APP_PATH" -name "*.framework" -d | while read fw; do
+            codesign -f -s "$SIGN_IDENTITY" --generate-entitlement-der "$fw" 2>&1
           done
-          echo "Using profile: $PROFILE_FILE"
-          if [ -z "$PROFILE_FILE" ]; then
-            echo "No profile found!"
-            exit 1
-          fi
-          # Extract profile name
-          PROFILE_NAME=$(security cms -D -i "$PROFILE_FILE" 2>/dev/null | awk '/<key>Name<\/key>/{getline; gsub(/<[^>]*>/,""); print}' | xargs)
-          echo "Profile name: $PROFILE_NAME"
-          # Build export plist
-          /usr/libexec/PlistBuddy -c "Clear dict" /tmp/export.plist 2>/dev/null || true
-          /usr/libexec/PlistBuddy -c "Add method string app-store" /tmp/export.plist
-          /usr/libexec/PlistBuddy -c "Add teamID string DN52659LL2" /tmp/export.plist
-          /usr/libexec/PlistBuddy -c "Add signingStyle string manual" /tmp/export.plist
-          /usr/libexec/PlistBuddy -c "Add provisioningProfiles dict" /tmp/export.plist
-          /usr/libexec/PlistBuddy -c "Add provisioningProfiles:$APP_ID string $PROFILE_NAME" /tmp/export.plist
-          /usr/libexec/PlistBuddy -c "Add uploadSymbols bool true" /tmp/export.plist
-          mkdir -p /tmp/ipa
-          xcodebuild -exportArchive \
-            -archivePath /tmp/xcarchive/HomeDue.xcarchive \
-            -exportPath /tmp/ipa \
-            -exportOptionsPlist /tmp/export.plist
+          find "$APP_PATH" -name "*.dylib" | while read lib; do
+            codesign -f -s "$SIGN_IDENTITY" "$lib" 2>&1
+          done
+
+          /usr/libexec/PlistBuddy -c "Clear dict" /tmp/entitlements.plist 2>/dev/null || true
+          /usr/libexec/PlistBuddy -c "Add keychain-access-groups array" /tmp/entitlements.plist
+          /usr/libexec/PlistBuddy -c "Add keychain-access-groups:0 string \$(AppIdentifierPrefix)com.homedue.app" /tmp/entitlements.plist
+
+          codesign -f -s "$SIGN_IDENTITY" --entitlements /tmp/entitlements.plist --generate-entitlement-der "$APP_PATH" 2>&1
+
+          codesign -v "$APP_PATH" 2>&1 && echo "SIGNATURE VALID" || echo "SIGNATURE INVALID"
+
+          mkdir -p "$IPA_DIR/Payload"
+          cp -R "$APP_PATH" "$IPA_DIR/Payload/"
+          cd "$IPA_DIR"
+          zip -qr App.ipa Payload/
+          echo "IPA ready: $IPA_DIR/App.ipa"
 
     artifacts:
       - /tmp/xcarchive/*.xcarchive
