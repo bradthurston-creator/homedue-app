@@ -49,9 +49,9 @@ workflows:
           keychain initialize
           app-store-connect fetch-signing-files $APP_ID --type IOS_APP_STORE --create --certificate-key @env:CERTIFICATE_PRIVATE_KEY
           keychain add-certificates
-          echo "Signing files ready (keeping project in Automatic signing mode)"
+          echo "Signing files ready"
 
-      - name: Build iOS app (workspace + automatic signing)
+      - name: Build iOS app (unsigned archive)
         script: |
           cd ios/App
           xcodebuild -workspace App.xcworkspace \
@@ -60,16 +60,19 @@ workflows:
             -configuration Release \
             -archivePath /tmp/xcarchive/HomeDue.xcarchive \
             DEVELOPMENT_TEAM=DN52659LL2 \
-            -allowProvisioningUpdates \
+            CODE_SIGN_STYLE=Automatic \
+            CODE_SIGNING_ALLOWED=NO \
             archive
 
-      - name: Export IPA
+      - name: Export IPA with signing
         script: |
-          /usr/libexec/PlistBuddy -c "Add method string app-store" /tmp/export.plist 2>/dev/null || /usr/libexec/PlistBuddy -c "Set method app-store" /tmp/export.plist
-          /usr/libexec/PlistBuddy -c "Add teamID string DN52659LL2" /tmp/export.plist 2>/dev/null || true
-          /usr/libexec/PlistBuddy -c "Add signingStyle string automatic" /tmp/export.plist 2>/dev/null || true
-          /usr/libexec/PlistBuddy -c "Add uploadSymbols bool true" /tmp/export.plist 2>/dev/null || true
+          /usr/libexec/PlistBuddy -c "Clear dict" /tmp/export.plist 2>/dev/null || true
+          /usr/libexec/PlistBuddy -c "Add method string app-store" /tmp/export.plist
+          /usr/libexec/PlistBuddy -c "Add teamID string DN52659LL2" /tmp/export.plist
+          /usr/libexec/PlistBuddy -c "Add signingStyle string manual" /tmp/export.plist
+          /usr/libexec/PlistBuddy -c "Add uploadSymbols bool true" /tmp/export.plist
           mkdir -p /tmp/ipa
+          echo "Exporting IPA with manual signing..."
           xcodebuild -exportArchive \
             -archivePath /tmp/xcarchive/HomeDue.xcarchive \
             -exportPath /tmp/ipa \
