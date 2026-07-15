@@ -1,4 +1,4 @@
-// HomeDue — Database Module
+// DocYourHome — Database Module
 
 const DB_NAME = 'homedue';
 const BACKUP_URL = 'http://129.121.78.85:5052';

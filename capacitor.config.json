@@ -1,6 +1,6 @@
 {
   "appId": "com.homedue.app",
-  "appName": "HomeDue",
+  "appName": "DocYourHome",
   "webDir": "www",
   "bundledWebRuntime": false,
   "server": {

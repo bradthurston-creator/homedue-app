@@ -1,4 +1,4 @@
-// HomeDue — Icon System
+// DocYourHome — Icon System
 // Custom icon family: rounded, minimal, consistent 1.75px stroke, 24x24 viewBox.
 // Usage: Icon('house', {size: 24, className: 'icon'})
 

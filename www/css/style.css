@@ -1,5 +1,5 @@
 /* ============================================================
-   HomeDue — Design System
+   DocYourHome — Design System
    A calm, premium home-maintenance visual language.
    Inspired by: Apple Home, Things 3, Notion Calendar, Linear, Calm.
    ============================================================ */
@@ -26,8 +26,8 @@
   /* Accents — used sparingly, only for status/meaning */
   --forest: #3E6B54;
   --forest-soft: #E7F0EA;
-  --amber: #C17F3A;
-  --amber-soft: #FBEEE0;
+  --amber: #B8935B;
+  --amber-soft: #F5EDE1;
   --sky: #4A7FA6;
   --sky-soft: #E8F1F7;
   --brick: #B0503F;
@@ -95,6 +95,9 @@
   --t-2xl: 30px;
   --t-3xl: 36px;
 
+  /* Brand serif — used only for hero/wordmark moments (system stack, works offline) */
+  --font-serif: Georgia, "Iowan Old Style", "Palatino Linotype", "URW Palladio L", P052, serif;
+
   /* Motion */
   --ease: cubic-bezier(0.25, 0.1, 0.25, 1);
   --ease-spring: cubic-bezier(0.34, 1.15, 0.64, 1);
@@ -131,8 +134,8 @@
 
   --forest: #6FA98A;
   --forest-soft: rgba(111, 169, 138, 0.14);
-  --amber: #E0A868;
-  --amber-soft: rgba(224, 168, 104, 0.14);
+  --amber: #D4B579;
+  --amber-soft: rgba(212, 181, 121, 0.14);
   --sky: #7FB2D6;
   --sky-soft: rgba(127, 178, 214, 0.14);
   --brick: #D48477;
@@ -375,6 +378,21 @@ h1, h2, h3, h4, p { margin: 0; }
   margin-top: var(--s-3); position: relative; z-index: 1;
 }
 .health-card__chip-row { display: flex; gap: var(--s-2); margin-top: var(--s-4); position: relative; z-index: 1; }
+
+.health-card__reasons {
+  margin-top: var(--s-3);
+  padding-top: var(--s-3);
+  border-top: 1px solid rgba(255,255,255,0.1);
+  display: flex; flex-direction: column; gap: 6px;
+  position: relative; z-index: 1;
+}
+.health-reason { display: flex; align-items: center; gap: 8px; }
+.health-reason__dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; background: rgba(255,255,255,0.4); }
+.health-reason__dot--overdue { background: var(--brick); }
+.health-reason__dot--soon { background: var(--amber); }
+.health-reason__dot--done { background: var(--forest); }
+.health-reason__dot--info { background: var(--sky); }
+.health-reason__text { font-size: var(--t-xs); color: rgba(255,255,255,0.72); line-height: 1.4; }
 .health-chip {
   font-size: var(--t-xs); font-weight: 600; padding: 5px 10px; border-radius: var(--r-full);
   background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.85);
@@ -790,7 +808,7 @@ textarea.input-field { min-height: 100px; resize: vertical; font-family: inherit
   display: flex; align-items: center; justify-content: center; margin-bottom: var(--s-5);
   box-shadow: var(--shadow-md);
 }
-.purchase-gate__title { font-size: var(--t-2xl); font-weight: 800; letter-spacing: -0.02em; margin-bottom: var(--s-2); }
+.purchase-gate__title { font-family: var(--font-serif); font-size: var(--t-2xl); font-weight: 600; letter-spacing: -0.01em; margin-bottom: var(--s-2); }
 .purchase-gate__desc { font-size: var(--t-base); color: var(--text-secondary); max-width: 320px; line-height: 1.55; margin-bottom: var(--s-6); }
 .purchase-gate__btn {
   width: 100%; max-width: 300px; padding: 16px; border-radius: var(--r-md);
@@ -840,7 +858,7 @@ textarea.input-field { min-height: 100px; resize: vertical; font-family: inherit
   background: var(--slate-900); color: #fff;
   display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-md);
 }
-.onboard-hero__title { font-size: var(--t-2xl); font-weight: 800; letter-spacing: -0.02em; }
+.onboard-hero__title { font-family: var(--font-serif); font-size: var(--t-2xl); font-weight: 600; letter-spacing: -0.01em; }
 .onboard-hero__sub { font-size: var(--t-base); color: var(--text-secondary); margin-top: var(--s-2); max-width: 320px; margin-left: auto; margin-right: auto; line-height: 1.5; }
 .onboard-footer { padding: var(--s-5) 0; text-align: center; }
 .onboard-footer__hint { font-size: var(--t-xs); color: var(--text-tertiary); margin-top: var(--s-3); }

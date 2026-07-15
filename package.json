@@ -1,7 +1,7 @@
 {
   "name": "homedue-app",
   "version": "1.0.0",
-  "description": "HomeDue — Home maintenance tracker. Know what's due at home.",
+  "description": "DocYourHome — The Owner's Manual for Your Home.",
   "main": "www/js/app.js",
   "scripts": {
     "build": "node scripts/build-db.js",

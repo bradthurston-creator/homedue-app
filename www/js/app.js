@@ -1,4 +1,4 @@
-// HomeDue — Main App
+// DocYourHome — Main App
 // Navigation, rendering, backup, purchase gating.
 // Visual layer rebuilt: custom icon system, Home Health Score, premium task cards, dark mode.
 
@@ -78,7 +78,7 @@ const App = {
         let html = `
             <div class="onboard-hero">
                 <div class="onboard-hero__icon">${Icon('house2', {size: 34})}</div>
-                <h2 class="onboard-hero__title">Welcome to HomeDue</h2>
+                <h2 class="onboard-hero__title">Welcome to DocYourHome</h2>
                 <p class="onboard-hero__sub">Tap a category to pick individual tasks you want to track. We'll remind you when they're due.</p>
             </div>
             <div class="onboard-counter" id="onboard-counter">0 tasks selected</div>
@@ -171,7 +171,7 @@ const App = {
     // ========================
     async purchaseApp() {
         localStorage.setItem('homedue_purchased', 'true');
-        this.showToast('HomeDue unlocked', 'done');
+        this.showToast('DocYourHome unlocked', 'done');
         this.showScreen('settings');
     },
 
@@ -190,7 +190,7 @@ const App = {
     //  CLOUD BACKUP
     // ========================
     async backupNow() {
-        if (!this.hasCloud) { this.showToast('Cloud backup requires HomeDue Cloud'); return; }
+        if (!this.hasCloud) { this.showToast('Cloud backup requires DocYourHome Cloud'); return; }
         this.showToast('Backing up…');
         try {
             const data = await db.exportBackup();
@@ -207,7 +207,7 @@ const App = {
     },
 
     async restoreBackup() {
-        if (!this.hasCloud) { this.showToast('Cloud backup requires HomeDue Cloud'); return; }
+        if (!this.hasCloud) { this.showToast('Cloud backup requires DocYourHome Cloud'); return; }
         this.showToast('Restoring…');
         try {
             const resp = await fetch(`${API_URL}/backup/${this.recoveryKey}`);
@@ -259,22 +259,51 @@ const App = {
     _computeHealthScore(data, stats) {
         // Score starts at 100, docked for overdue/soon items, boosted by completion history.
         let score = 100;
-        score -= Math.min(data.overdue.length * 8, 55);
-        score -= Math.min(data.dueSoon.length * 2, 15);
-        if (stats.active === 0) score = 70; // Nothing tracked yet — neutral, not a false "perfect"
+        const overduePenalty = Math.min(data.overdue.length * 8, 55);
+        const soonPenalty = Math.min(data.dueSoon.length * 2, 15);
+        score -= overduePenalty;
+        score -= soonPenalty;
+        const untracked = stats.active === 0;
+        if (untracked) score = 70; // Nothing tracked yet — neutral, not a false "perfect"
         score = Math.max(15, Math.min(100, Math.round(score)));
         let label, tone;
         if (score >= 90) { label = 'Excellent'; tone = 'done'; }
         else if (score >= 70) { label = 'Good'; tone = 'done'; }
         else if (score >= 45) { label = 'Needs attention'; tone = 'soon'; }
         else { label = 'Falling behind'; tone = 'overdue'; }
-        return { score, label, tone };
+
+        // Build the "why" — the specific factors driving the score, most impactful first
+        const reasons = [];
+        if (untracked) {
+            reasons.push({ text: 'Nothing tracked yet — score is neutral until you add tasks', tone: 'info' });
+        } else {
+            if (data.overdue.length > 0) {
+                const perTask = Math.min(8, Math.round(overduePenalty / data.overdue.length));
+                reasons.push({ text: `${data.overdue.length} overdue task${data.overdue.length !== 1 ? 's' : ''} (\u2212${perTask} pts each)`, tone: 'overdue' });
+            }
+            if (data.dueSoon.length > 0) {
+                reasons.push({ text: `${data.dueSoon.length} task${data.dueSoon.length !== 1 ? 's' : ''} due this week (\u22122 pts each)`, tone: 'soon' });
+            }
+            if (stats.completed > 0) {
+                reasons.push({ text: `${stats.completed} task${stats.completed !== 1 ? 's' : ''} completed on time`, tone: 'done' });
+            }
+            if (reasons.length === 0) {
+                reasons.push({ text: 'Every tracked task is up to date', tone: 'done' });
+            }
+        }
+
+        return { score, label, tone, reasons };
     },
 
     _healthCard(data, stats) {
         const h = this._computeHealthScore(data, stats);
         const circumference = 2 * Math.PI * 26;
         const offset = circumference - (h.score / 100) * circumference;
+        const reasonsHtml = h.reasons.map(r => `
+            <div class="health-reason">
+                <span class="health-reason__dot health-reason__dot--${r.tone}"></span>
+                <span class="health-reason__text">${r.text}</span>
+            </div>`).join('');
         return `
             <div class="health-card">
                 <div class="health-card__glow"></div>
@@ -291,6 +320,7 @@ const App = {
                     </div>
                 </div>
                 <div class="health-card__sub">${h.label}${data.overdue.length ? ` · ${data.overdue.length} task${data.overdue.length !== 1 ? 's' : ''} need attention` : ' · Everything on track'}</div>
+                <div class="health-card__reasons">${reasonsHtml}</div>
                 <div class="health-card__chip-row">
                     <div class="health-chip">${Icon('checklist', {size: 13})} ${stats.active} tracked</div>
                     <div class="health-chip">${Icon('check', {size: 13})} ${stats.completed} done</div>
@@ -338,7 +368,7 @@ const App = {
             html += `<div class="empty-state">
                 <div class="empty-state__illustration">${Icon('layers', {size: 36})}</div>
                 <div class="empty-state__title">Nothing tracked yet</div>
-                <p class="empty-state__text">Head to Categories and turn on the parts of your home you want HomeDue to watch for you.</p>
+                <p class="empty-state__text">Head to Categories and turn on the parts of your home you want DocYourHome to watch for you.</p>
                 <div class="empty-state__action"><button class="btn btn--primary" onclick="App.showScreen('categories')">Browse Categories</button></div>
             </div>`;
         }
@@ -467,7 +497,7 @@ const App = {
             c.innerHTML = `
                 <div class="purchase-gate">
                     <div class="purchase-gate__icon">${Icon('house2', {size: 36})}</div>
-                    <h2 class="purchase-gate__title">HomeDue</h2>
+                    <h2 class="purchase-gate__title">DocYourHome</h2>
                     <p class="purchase-gate__desc">Home maintenance tracking with 158 built-in tasks. Never miss a filter change again.</p>
                     <button class="purchase-gate__btn" onclick="App.purchaseApp()">Continue — $4.99</button>
                     <p class="purchase-gate__sub">One-time purchase. No subscription required.</p>
