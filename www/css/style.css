@@ -886,6 +886,33 @@ textarea.input-field { min-height: 100px; resize: vertical; font-family: inherit
 .doc-picker__desc { font-size: var(--t-xs); color: var(--text-tertiary); display: block; margin-top: 2px; }
 .doc-picker__cancel { width: 100%; padding: var(--s-3); border: none; background: none; color: var(--text-tertiary); font-size: var(--t-sm); cursor: pointer; text-align: center; }
 
+/* Category picker grid */
+.cat-picker__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--s-2);
+  padding: 0 0 var(--s-4);
+}
+.cat-picker__btn {
+  padding: 12px 8px;
+  border: 2px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  font-size: var(--t-base);
+  font-weight: 600;
+  text-align: center;
+  cursor: pointer;
+  transition: all var(--dur-fast) var(--ease);
+  color: var(--text-primary);
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+.cat-picker__btn:active {
+  transform: scale(0.96);
+  border-color: var(--amber);
+  background: var(--amber-soft);
+}
+
 /* Document viewer overlay */
 .doc-viewer { position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; }
 .doc-viewer__bg { position: absolute; inset: 0; background: rgba(0,0,0,0.85); }

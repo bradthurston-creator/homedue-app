@@ -741,6 +741,38 @@ const App = {
     // ========================
     //  DOCUMENTS
     // ========================
+
+    _pickCategory() {
+        const categories = ['Manual', 'Warranty', 'Receipt', 'Quote', 'Photo', 'Other'];
+        const catColors = { Manual: '#4A7FA6', Warranty: '#B8935B', Receipt: '#3E6B54', Quote: '#8B6B4A', Photo: '#6B5B8A', Other: '#5C6472' };
+        return new Promise(resolve => {
+            const overlay = document.createElement('div');
+            overlay.className = 'doc-viewer';
+            overlay.innerHTML = `
+                <div class="doc-viewer__bg" onclick="this.parentElement.remove()"></div>
+                <div class="doc-picker">
+                    <h3 class="doc-picker__title">Select Category</h3>
+                    <div class="cat-picker__grid">
+                        ${categories.map(c => `
+                            <button class="cat-picker__btn" data-cat="${c}">${c}</button>
+                        `).join('')}
+                    </div>
+                    <button class="doc-picker__cancel" id="cat-picker-cancel">Cancel</button>
+                </div>`;
+            overlay.querySelectorAll('.cat-picker__btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    overlay.remove();
+                    resolve(btn.dataset.cat);
+                });
+            });
+            overlay.querySelector('#cat-picker-cancel').addEventListener('click', () => {
+                overlay.remove();
+                resolve(null);
+            });
+            document.body.appendChild(overlay);
+        });
+    },
+
     async _addDocument() {
         // Show a simple action sheet
         const c = document.getElementById('records-content');
@@ -770,9 +802,8 @@ const App = {
     async _importPDF() {
         const name = prompt('Document name:');
         if (!name) return;
-        const categories = ['Manual', 'Warranty', 'Receipt', 'Quote', 'Photo', 'Other'];
-        const catStr = prompt(`Category (${categories.join(', ')}):`);
-        const category = categories.includes(catStr) ? catStr : 'Other';
+        const category = await this._pickCategory();
+        if (!category) return;
         try {
             const input = document.createElement('input');
             input.type = 'file'; input.accept = '.pdf,.doc,.docx,.txt,.xls,.xlsx,.jpg,.jpeg,.png,.heic';
@@ -813,9 +844,8 @@ const App = {
     async _takePhotoDoc() {
         const name = prompt('Document name:');
         if (!name) return;
-        const categories = ['Manual', 'Warranty', 'Receipt', 'Photo', 'Other'];
-        const catStr = prompt(`Category (${categories.join(', ')}):`);
-        const category = categories.includes(catStr) ? catStr : 'Other';
+        const category = await this._pickCategory();
+        if (!category) return;
         try {
             let imageDataUrl;
             if (typeof Capacitor !== 'undefined' && Capacitor.Plugins && Capacitor.Plugins.Camera) {
@@ -865,7 +895,7 @@ const App = {
                 this._renderRecords();
                 return;
             }
-            await db.addDocument({ name, category, docType: 'pdf', photoPath: pdfDataUrl });
+            await db.addDocument({ name, category, docType: 'pdf', photoPath: pdfDataUrl, imageDataUrl: imageDataUrl });
             this.showToast('Document saved as PDF', 'done');
             this._renderRecords();
         } catch (e) {
@@ -890,8 +920,21 @@ const App = {
         overlay.className = 'doc-viewer';
         let content;
         if (doc.docType === 'pdf') {
-            content = `<embed class="doc-viewer__pdf" src="${doc.photoPath}" type="application/pdf">
-                <p style="color:rgba(255,255,255,0.6);padding:20px;text-align:center;">PDF preview not available. <a href="${doc.photoPath}" download="${doc.name}.pdf" style="color:#D4B579;">Download PDF</a></p>`;
+            if (doc.imageDataUrl) {
+                // Photo-to-PDF: show the original image as preview
+                content = `<img src="${doc.imageDataUrl}" alt="${doc.name}">
+                    <div style="padding:12px;text-align:center;">
+                        <a href="${doc.photoPath}" download="${doc.name}.pdf" style="color:#D4B579;text-decoration:none;font-size:14px;">Download PDF</a>
+                    </div>`;
+            } else {
+                // Imported PDF: show download card
+                content = `<div class="doc-viewer__file">
+                    <div class="doc-viewer__file-icon">${Icon('folder', {size: 48})}</div>
+                    <p style="color:rgba(255,255,255,0.8);margin:12px 0 4px;font-size:var(--t-base);">${doc.name}</p>
+                    <p style="color:rgba(255,255,255,0.5);font-size:var(--t-sm);">PDF file</p>
+                    <a href="${doc.photoPath}" download="${doc.name}.pdf" class="doc-viewer__download">Download PDF</a>
+                </div>`;
+            }
         } else if (doc.docType === 'image') {
             content = `<img src="${doc.photoPath}" alt="${doc.name}">`;
         } else {
