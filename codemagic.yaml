@@ -1,13 +1,13 @@
 workflows:
   ios-build:
-    name: HomeDue iOS Build
+    name: DocYourHome iOS Build
     max_build_duration: 30
     instance_type: mac_mini_m2
 
     environment:
       vars:
         APP_ID: com.homedue.app
-        APP_NAME: HomeDue
+        APP_NAME: DocYourHome
         APP_VERSION: 1.0
       groups:
         - apple_credentials
