@@ -749,9 +749,9 @@ const App = {
         const category = categories.includes(catStr) ? catStr : 'Other';
         try {
             if (typeof Capacitor !== 'undefined' && Capacitor.Plugins && Capacitor.Plugins.Camera) {
-                const photo = await Capacitor.Plugins.Camera.getPhoto({ quality: 70, allowEditing: false, saveToGallery: false, resultType: 'Uri' });
-                if (photo && photo.path) {
-                    await db.addDocument({ name, category, photoPath: photo.path });
+                const photo = await Capacitor.Plugins.Camera.getPhoto({ quality: 70, allowEditing: false, saveToGallery: false, resultType: 'DataUrl' });
+                if (photo && photo.dataUrl) {
+                    await db.addDocument({ name, category, photoPath: photo.dataUrl });
                     this.showToast('Document saved', 'done');
                     this._renderRecords();
                 }
