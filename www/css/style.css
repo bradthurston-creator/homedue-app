@@ -844,6 +844,25 @@ textarea.input-field { min-height: 100px; resize: vertical; font-family: inherit
 .equipment-card__name { font-weight: 700; font-size: var(--t-base); color: var(--text-primary); }
 .equipment-card__meta { font-size: var(--t-xs); color: var(--text-tertiary); margin-top: 1px; }
 .equipment-card__actions { display: flex; gap: 2px; }
+
+.doc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-3); }
+.doc-card {
+  position: relative; background: var(--surface); border-radius: var(--r-md);
+  border: 1px solid var(--border); box-shadow: var(--shadow-xs); overflow: hidden;
+}
+.doc-card__image { width: 100%; aspect-ratio: 4/3; background: var(--surface-2); overflow: hidden; }
+.doc-card__image img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.doc-card__body { padding: var(--s-2) var(--s-3) var(--s-3); }
+.doc-card__name { font-size: var(--t-sm); font-weight: 600; color: var(--text-primary); margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.doc-card__category { display: inline-block; font-size: 11px; font-weight: 600; padding: 1px 8px; border-radius: var(--r-full); margin-right: var(--s-2); }
+.doc-card__date { font-size: var(--t-xs); color: var(--text-tertiary); }
+.doc-card__delete {
+  position: absolute; top: 4px; right: 4px; width: 28px; height: 28px;
+  border-radius: 50%; border: none; background: rgba(0,0,0,0.5); color: #fff;
+  display: flex; align-items: center; justify-content: center; cursor: pointer;
+  opacity: 0; transition: opacity 0.15s;
+}
+.doc-card:hover .doc-card__delete { opacity: 1; }
 .icon-btn {
   width: 34px; height: 34px; border-radius: 50%; border: none; background: none;
   color: var(--text-tertiary); display: flex; align-items: center; justify-content: center; cursor: pointer;

@@ -490,20 +490,7 @@ const App = {
     // ========================
     async _renderSettings() {
         const stats = await db.getStats();
-        const purchased = this.isPurchased();
         const c = document.getElementById('settings-content');
-
-        if (!purchased) {
-            c.innerHTML = `
-                <div class="purchase-gate">
-                    <div class="purchase-gate__icon">${Icon('house2', {size: 36})}</div>
-                    <h2 class="purchase-gate__title">DocYourHome</h2>
-                    <p class="purchase-gate__desc">Home maintenance tracking with 158 built-in tasks. Never miss a filter change again.</p>
-                    <button class="purchase-gate__btn" onclick="App.purchaseApp()">Continue — $4.99</button>
-                    <p class="purchase-gate__sub">One-time purchase. No subscription required.</p>
-                </div>`;
-            return;
-        }
 
         const lastBackup = localStorage.getItem('homedue_last_backup');
         const backupDate = lastBackup ? new Date(parseInt(lastBackup)).toLocaleDateString() : 'Never';
@@ -610,18 +597,20 @@ const App = {
     },
 
     // ========================
-    //  RECORDS (History + Equipment)
+    //  RECORDS (History + Equipment + Documents)
     // ========================
     async _renderRecords() {
         const c = document.getElementById('records-content');
         try {
             const history = await db.getCompletionHistory();
             const equipment = await db.getEquipment();
+            const documents = await db.getDocuments();
 
             let html = `
                 <div class="segmented">
                     <button class="segmented__btn segmented__btn--active" id="records-tab-history" onclick="App._showRecordsTab('history')">History</button>
                     <button class="segmented__btn" id="records-tab-equipment" onclick="App._showRecordsTab('equipment')">Equipment</button>
+                    <button class="segmented__btn" id="records-tab-documents" onclick="App._showRecordsTab('documents')">Documents</button>
                 </div>
                 <div id="records-history">`;
 
@@ -679,6 +668,41 @@ const App = {
                 });
             }
             html += '</div>';
+
+            // Documents tab
+            html += `<div id="records-documents" style="display:none;">
+                <div style="display:flex;justify-content:flex-end;margin-bottom:var(--s-3);">
+                    <button class="btn btn--secondary btn--sm" onclick="App._addDocument()">${Icon('plus', {size: 14})} Add Document</button>
+                </div>`;
+
+            if (documents.length === 0) {
+                html += `<div class="empty-state">
+                    <div class="empty-state__illustration">${Icon('folder', {size: 32})}</div>
+                    <div class="empty-state__title">No documents yet</div>
+                    <p class="empty-state__text">Snap photos of manuals, warranties, receipts, paint colors — anything you want to keep.</p>
+                </div>`;
+            } else {
+                html += '<div class="doc-grid">';
+                documents.forEach(d => {
+                    const catColors = { Manual: '#4A7FA6', Warranty: '#B8935B', Receipt: '#3E6B54', Photo: '#6B5B8A', Other: '#5C6472' };
+                    const catColor = catColors[d.category] || '#5C6472';
+                    html += `
+                        <div class="doc-card">
+                            <div class="doc-card__image">
+                                <img src="${d.photoPath}" alt="${d.name}" loading="lazy">
+                            </div>
+                            <div class="doc-card__body">
+                                <div class="doc-card__name">${d.name}</div>
+                                <span class="doc-card__category" style="background:${catColor}20;color:${catColor};">${d.category}</span>
+                                <span class="doc-card__date">${d.date}</span>
+                            </div>
+                            <button class="doc-card__delete" onclick="App._deleteDocument('${d.id}')" aria-label="Delete">${Icon('x', {size: 14})}</button>
+                        </div>`;
+                });
+                html += '</div>';
+            }
+            html += '</div>';
+
             c.innerHTML = html;
         } catch (e) {
             console.error('Records error:', e);
@@ -689,8 +713,10 @@ const App = {
     _showRecordsTab(tab) {
         document.getElementById('records-history').style.display = tab === 'history' ? 'block' : 'none';
         document.getElementById('records-equipment').style.display = tab === 'equipment' ? 'block' : 'none';
+        document.getElementById('records-documents').style.display = tab === 'documents' ? 'block' : 'none';
         document.getElementById('records-tab-history').classList.toggle('segmented__btn--active', tab === 'history');
         document.getElementById('records-tab-equipment').classList.toggle('segmented__btn--active', tab === 'equipment');
+        document.getElementById('records-tab-documents').classList.toggle('segmented__btn--active', tab === 'documents');
     },
 
     _showAddEquipment() {
@@ -708,6 +734,54 @@ const App = {
     async _deleteEquipment(id) {
         if (confirm('Remove this equipment?')) {
             await db.deleteEquipment(id);
+            this._renderRecords();
+        }
+    },
+
+    // ========================
+    //  DOCUMENTS
+    // ========================
+    async _addDocument() {
+        const name = prompt('Document name:');
+        if (!name) return;
+        const categories = ['Manual', 'Warranty', 'Receipt', 'Photo', 'Other'];
+        const catStr = prompt(`Category (${categories.join(', ')}):`);
+        const category = categories.includes(catStr) ? catStr : 'Other';
+        try {
+            if (typeof Capacitor !== 'undefined' && Capacitor.Plugins && Capacitor.Plugins.Camera) {
+                const photo = await Capacitor.Plugins.Camera.getPhoto({ quality: 70, allowEditing: false, saveToGallery: false, resultType: 'Uri' });
+                if (photo && photo.path) {
+                    await db.addDocument({ name, category, photoPath: photo.path });
+                    this.showToast('Document saved', 'done');
+                    this._renderRecords();
+                }
+            } else {
+                const input = document.createElement('input');
+                input.type = 'file'; input.accept = 'image/*';
+                input.onchange = async (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = async (ev) => {
+                            await db.addDocument({ name, category, photoPath: ev.target.result });
+                            this.showToast('Document saved', 'done');
+                            this._renderRecords();
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                };
+                input.click();
+            }
+        } catch (e) {
+            console.error('Add document error:', e);
+            this.showToast('Could not capture photo');
+        }
+    },
+
+    async _deleteDocument(id) {
+        if (confirm('Delete this document?')) {
+            await db.deleteDocument(id);
+            this.showToast('Document deleted');
             this._renderRecords();
         }
     },

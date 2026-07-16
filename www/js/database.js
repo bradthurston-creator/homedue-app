@@ -6,7 +6,7 @@ const BACKUP_URL = 'http://129.121.78.85:5052';
 class HomeDueDB {
     constructor() {
         this.ready = false;
-        this.store = { tasks: [], userTasks: [], completedLog: [], contractors: [], equipment: [] };
+        this.store = { tasks: [], userTasks: [], completedLog: [], contractors: [], equipment: [], documents: [] };
     }
 
     async init() {
@@ -141,13 +141,31 @@ class HomeDueDB {
         if (eq) { eq.manualPhotoPaths.push(photoPath); this._saveStore(); }
     }
 
-    async exportBackup() { return { version:'1.0', exported:new Date().toISOString(), tasks:this.store.tasks, userTasks:this.store.userTasks, completionLog:this.store.completedLog, contractors:this.store.contractors, equipment:this.store.equipment }; }
+    // ========================
+    //  DOCUMENTS
+    // ========================
+    async addDocument(item) {
+        const doc = { id: Date.now().toString(), name: item.name, category: item.category || 'Other', photoPath: item.photoPath, date: new Date().toISOString().split('T')[0], notes: item.notes || '' };
+        this.store.documents.push(doc);
+        this._saveStore();
+        return doc;
+    }
+
+    async getDocuments() { return this.store.documents.slice().reverse(); }
+
+    async deleteDocument(id) {
+        this.store.documents = this.store.documents.filter(d => d.id !== id);
+        this._saveStore();
+    }
+
+    async exportBackup() { return { version:'1.0', exported:new Date().toISOString(), tasks:this.store.tasks, userTasks:this.store.userTasks, completionLog:this.store.completedLog, contractors:this.store.contractors, equipment:this.store.equipment, documents:this.store.documents }; }
 
     async importBackup(data) {
         if (data.userTasks) this.store.userTasks = data.userTasks;
         if (data.completionLog) this.store.completionLog = data.completionLog;
         if (data.contractors) this.store.contractors = data.contractors;
         if (data.equipment) this.store.equipment = data.equipment;
+        if (data.documents) this.store.documents = data.documents;
         this._saveStore();
     }
 }
