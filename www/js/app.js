@@ -912,6 +912,37 @@ const App = {
         }
     },
 
+    async _openPDFNative(dataUrl, fileName) {
+        try {
+            if (typeof Capacitor !== 'undefined' && Capacitor.Plugins && Capacitor.Plugins.Filesystem && Capacitor.Plugins.Share) {
+                const base64Data = dataUrl.split(',')[1];
+                const result = await Capacitor.Plugins.Filesystem.writeFile({
+                    path: fileName,
+                    data: base64Data,
+                    directory: 'cache'
+                });
+                await Capacitor.Plugins.Share.share({
+                    title: 'Open PDF',
+                    text: fileName,
+                    url: result.uri,
+                    dialogTitle: 'Open with'
+                });
+            } else {
+                // Fallback: download the file
+                const a = document.createElement('a');
+                a.href = dataUrl;
+                a.download = fileName;
+                a.click();
+            }
+        } catch (e) {
+            console.warn('Native PDF open failed, falling back to download:', e);
+            const a = document.createElement('a');
+            a.href = dataUrl;
+            a.download = fileName;
+            a.click();
+        }
+    },
+
     async _viewDocument(id) {
         const docs = await db.getDocuments();
         const doc = docs.find(d => d.id === id);
@@ -921,18 +952,22 @@ const App = {
         let content;
         if (doc.docType === 'pdf') {
             if (doc.imageDataUrl) {
-                // Photo-to-PDF: show the original image as preview
+                // Photo-to-PDF: show the original image as preview + open button
                 content = `<img src="${doc.imageDataUrl}" alt="${doc.name}">
-                    <div style="padding:12px;text-align:center;">
-                        <a href="${doc.photoPath}" download="${doc.name}.pdf" style="color:#D4B579;text-decoration:none;font-size:14px;">Download PDF</a>
+                    <div style="padding:12px;text-align:center;display:flex;gap:10px;justify-content:center;">
+                        <button class="doc-viewer__open" onclick="App._openPDFNative('${doc.photoPath.replace(/'/g, "\\'")}', '${doc.name.replace(/'/g, "\\'")}.pdf')">${Icon('folder', {size: 16})} Open in PDF Viewer</button>
+                        <a href="${doc.photoPath}" download="${doc.name}.pdf" class="doc-viewer__download">Download</a>
                     </div>`;
             } else {
-                // Imported PDF: show download card
+                // Imported PDF: show open button + download
                 content = `<div class="doc-viewer__file">
                     <div class="doc-viewer__file-icon">${Icon('folder', {size: 48})}</div>
                     <p style="color:rgba(255,255,255,0.8);margin:12px 0 4px;font-size:var(--t-base);">${doc.name}</p>
                     <p style="color:rgba(255,255,255,0.5);font-size:var(--t-sm);">PDF file</p>
-                    <a href="${doc.photoPath}" download="${doc.name}.pdf" class="doc-viewer__download">Download PDF</a>
+                    <div style="display:flex;gap:10px;justify-content:center;margin-top:16px;">
+                        <button class="doc-viewer__open" onclick="App._openPDFNative('${doc.photoPath.replace(/'/g, "\\'")}', '${doc.name.replace(/'/g, "\\'")}.pdf')">${Icon('folder', {size: 16})} Open in PDF Viewer</button>
+                        <a href="${doc.photoPath}" download="${doc.name}.pdf" class="doc-viewer__download">Download</a>
+                    </div>
                 </div>`;
             }
         } else if (doc.docType === 'image') {

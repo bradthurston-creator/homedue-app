@@ -867,8 +867,6 @@ textarea.input-field { min-height: 100px; resize: vertical; font-family: inherit
   width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
   background: var(--surface-2); color: var(--text-tertiary);
 }
-.doc-viewer__pdf { width: 100%; height: 75vh; border: none; border-radius: var(--r-md); }
-
 /* Document picker action sheet */
 .doc-picker {
   position: relative; background: var(--surface); border-radius: var(--r-lg);
@@ -924,6 +922,18 @@ textarea.input-field { min-height: 100px; resize: vertical; font-family: inherit
 .doc-viewer__file { text-align: center; padding: 40px 20px; }
 .doc-viewer__file-icon { width: 80px; height: 80px; margin: 0 auto; border-radius: var(--r-md); background: rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: center; color: #D4B579; }
 .doc-viewer__download { display: inline-block; margin-top: 16px; padding: 10px 24px; border-radius: var(--r-md); background: #D4B579; color: #1B212A; font-weight: 600; font-size: var(--t-sm); text-decoration: none; }
+.doc-viewer__open {
+  display: inline-flex; align-items: center; gap: 6px;
+  margin-top: 16px; padding: 10px 24px; border-radius: var(--r-md);
+  border: 1.5px solid rgba(255,255,255,0.25);
+  background: rgba(255,255,255,0.08);
+  color: #fff;
+  font-weight: 600; font-size: var(--t-sm);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+.doc-viewer__open:active { background: rgba(255,255,255,0.16); }
 .icon-btn {
   width: 34px; height: 34px; border-radius: 50%; border: none; background: none;
   color: var(--text-tertiary); display: flex; align-items: center; justify-content: center; cursor: pointer;
