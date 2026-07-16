@@ -26,6 +26,7 @@ class HomeDueDB {
         if (saved) {
             try { this.store = JSON.parse(saved); } catch(e) {}
         }
+        if (!this.store.documents) this.store.documents = [];
     }
 
     _saveStore() {
@@ -151,7 +152,7 @@ class HomeDueDB {
         return doc;
     }
 
-    async getDocuments() { return this.store.documents.slice().reverse(); }
+    async getDocuments() { if (!this.store.documents) this.store.documents = []; return this.store.documents.slice().reverse(); }
 
     async deleteDocument(id) {
         this.store.documents = this.store.documents.filter(d => d.id !== id);
