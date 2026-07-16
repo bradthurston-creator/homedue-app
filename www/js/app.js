@@ -689,14 +689,14 @@ const App = {
                     html += `
                         <div class="doc-card" onclick="App._viewDocument('${d.id}')">
                             <div class="doc-card__image">
-                                <img src="${d.photoPath}" alt="${d.name}" loading="lazy">
+                                ${d.docType === 'pdf' ? `<div class="doc-card__pdf-badge">${Icon('folder', {size: 22})}</div>` : `<img src="${d.photoPath}" alt="${d.name}" loading="lazy">`}
                             </div>
                             <div class="doc-card__body">
                                 <div class="doc-card__name">${d.name}</div>
                                 <span class="doc-card__category" style="background:${catColor}20;color:${catColor};">${d.category}</span>
-                                <span class="doc-card__date">${d.date}</span>
+                                <span class="doc-card__date">${d.date}${d.docType === 'pdf' ? ' · PDF' : ''}</span>
                             </div>
-                            <button class="doc-card__delete" onclick="App._deleteDocument('${d.id}')" aria-label="Delete">${Icon('x', {size: 14})}</button>
+                            <button class="doc-card__delete" onclick="event.stopPropagation();App._deleteDocument('${d.id}')" aria-label="Delete">${Icon('x', {size: 14})}</button>
                         </div>`;
                 });
                 html += '</div>';
@@ -742,39 +742,90 @@ const App = {
     //  DOCUMENTS
     // ========================
     async _addDocument() {
+        const type = prompt('Import a PDF or take a photo? (type "pdf" or "photo"):');
+        if (!type) return;
+        if (type.toLowerCase() === 'pdf') {
+            await this._importPDF();
+        } else {
+            await this._takePhotoDoc();
+        }
+    },
+
+    async _importPDF() {
         const name = prompt('Document name:');
         if (!name) return;
         const categories = ['Manual', 'Warranty', 'Receipt', 'Photo', 'Other'];
         const catStr = prompt(`Category (${categories.join(', ')}):`);
         const category = categories.includes(catStr) ? catStr : 'Other';
         try {
-            if (typeof Capacitor !== 'undefined' && Capacitor.Plugins && Capacitor.Plugins.Camera) {
-                const photo = await Capacitor.Plugins.Camera.getPhoto({ quality: 70, allowEditing: false, saveToGallery: false, resultType: 'DataUrl' });
-                if (photo && photo.dataUrl) {
-                    await db.addDocument({ name, category, photoPath: photo.dataUrl });
-                    this.showToast('Document saved', 'done');
+            const input = document.createElement('input');
+            input.type = 'file'; input.accept = '.pdf,application/pdf';
+            input.onchange = async (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = async (ev) => {
+                    await db.addDocument({ name, category, docType: 'pdf', photoPath: ev.target.result });
+                    this.showToast('PDF imported', 'done');
                     this._renderRecords();
-                }
+                };
+                reader.readAsDataURL(file);
+            };
+            input.click();
+        } catch (e) {
+            console.error('Import PDF error:', e);
+            this.showToast('Could not import PDF');
+        }
+    },
+
+    async _takePhotoDoc() {
+        const name = prompt('Document name:');
+        if (!name) return;
+        const categories = ['Manual', 'Warranty', 'Receipt', 'Photo', 'Other'];
+        const catStr = prompt(`Category (${categories.join(', ')}):`);
+        const category = categories.includes(catStr) ? catStr : 'Other';
+        try {
+            let imageDataUrl;
+            if (typeof Capacitor !== 'undefined' && Capacitor.Plugins && Capacitor.Plugins.Camera) {
+                const photo = await Capacitor.Plugins.Camera.getPhoto({ quality: 80, allowEditing: false, saveToGallery: false, resultType: 'DataUrl' });
+                if (photo && photo.dataUrl) {
+                    imageDataUrl = photo.dataUrl;
+                } else { return; }
             } else {
                 const input = document.createElement('input');
                 input.type = 'file'; input.accept = 'image/*';
-                input.onchange = async (e) => {
-                    const file = e.target.files[0];
-                    if (file) {
+                const data = await new Promise(resolve => {
+                    input.onchange = (e) => {
+                        const file = e.target.files[0];
+                        if (!file) { resolve(null); return; }
                         const reader = new FileReader();
-                        reader.onload = async (ev) => {
-                            await db.addDocument({ name, category, photoPath: ev.target.result });
-                            this.showToast('Document saved', 'done');
-                            this._renderRecords();
-                        };
+                        reader.onload = (ev) => resolve(ev.target.result);
                         reader.readAsDataURL(file);
-                    }
-                };
-                input.click();
+                    };
+                    input.click();
+                });
+                if (!data) return;
+                imageDataUrl = data;
             }
+            // Convert image to PDF using jsPDF
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            const img = new Image();
+            img.src = imageDataUrl;
+            await new Promise(r => { img.onload = r; });
+            const imgW = img.width, imgH = img.height;
+            const pageW = 210, pageH = 297;
+            const ratio = Math.min(pageW / imgW, pageH / imgH) * 0.9;
+            const dw = imgW * ratio, dh = imgH * ratio;
+            const x = (pageW - dw) / 2, y = (pageH - dh) / 2;
+            pdf.addImage(imageDataUrl, 'JPEG', x, y, dw, dh);
+            const pdfDataUrl = pdf.output('datauristring');
+            await db.addDocument({ name, category, docType: 'pdf', photoPath: pdfDataUrl });
+            this.showToast('Document saved as PDF', 'done');
+            this._renderRecords();
         } catch (e) {
-            console.error('Add document error:', e);
-            this.showToast('Could not capture photo');
+            console.error('Photo doc error:', e);
+            this.showToast('Could not create document');
         }
     },
 
@@ -792,11 +843,17 @@ const App = {
         if (!doc) return;
         const overlay = document.createElement('div');
         overlay.className = 'doc-viewer';
+        let content;
+        if (doc.docType === 'pdf') {
+            content = `<iframe class="doc-viewer__pdf" src="${doc.photoPath}"></iframe>`;
+        } else {
+            content = `<img src="${doc.photoPath}" alt="${doc.name}">`;
+        }
         overlay.innerHTML = `
             <div class="doc-viewer__bg" onclick="this.parentElement.remove()"></div>
             <div class="doc-viewer__content">
                 <button class="doc-viewer__close" onclick="this.closest('.doc-viewer').remove()">${Icon('x', {size: 20})}</button>
-                <img src="${doc.photoPath}" alt="${doc.name}">
+                ${content}
                 <div class="doc-viewer__info">${doc.name} <span class="doc-viewer__cat">${doc.category}</span></div>
             </div>`;
         document.body.appendChild(overlay);

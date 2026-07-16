@@ -863,6 +863,11 @@ textarea.input-field { min-height: 100px; resize: vertical; font-family: inherit
   opacity: 0; transition: opacity 0.15s;
 }
 .doc-card:hover .doc-card__delete { opacity: 1; }
+.doc-card__pdf-badge {
+  width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
+  background: var(--surface-2); color: var(--text-tertiary);
+}
+.doc-viewer__pdf { width: 100%; height: 75vh; border: none; border-radius: var(--r-md); }
 
 /* Document viewer overlay */
 .doc-viewer { position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; }

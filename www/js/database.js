@@ -146,7 +146,7 @@ class HomeDueDB {
     //  DOCUMENTS
     // ========================
     async addDocument(item) {
-        const doc = { id: Date.now().toString(), name: item.name, category: item.category || 'Other', photoPath: item.photoPath, date: new Date().toISOString().split('T')[0], notes: item.notes || '' };
+        const doc = { id: Date.now().toString(), name: item.name, category: item.category || 'Other', docType: item.docType || 'image', photoPath: item.photoPath, date: new Date().toISOString().split('T')[0], notes: item.notes || '' };
         this.store.documents.push(doc);
         this._saveStore();
         return doc;
