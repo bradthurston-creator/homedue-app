@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head><script src="js/icons.js"></script></head>
+<body>
+<link rel="stylesheet" href="css/style.css">
+<script src="js/database.js"></script>
+<script src="js/app.js"></script>
+<script>
+(async function() {
+  // Seed realistic data
+  localStorage.setItem('homedue_purchased', 'true');
+  localStorage.setItem('homedue_cloud', 'true');
+  
+  // Seed some equipment
+  await db.addEquipment({ name: 'HVAC System', brand: 'Carrier', model: 'Infinity 24', serial: 'CNT-2022-4481', purchaseDate: '2022-03-15', warrantyYears: 10, notes: 'Annual maintenance required' });
+  await db.addEquipment({ name: 'Water Heater', brand: 'Rheem', model: 'Performance Platinum', serial: 'RH-4492-21', purchaseDate: '2021-11-08', warrantyYears: 6, notes: 'Flush annually' });
+  await db.addEquipment({ name: 'Refrigerator', brand: 'KitchenAid', model: 'KRMF706ESS', serial: 'KA-7834-23', purchaseDate: '2023-06-01', warrantyYears: 5, notes: 'Replace water filter every 6 months' });
+  
+  // Seed some documents (using base64 placeholder)
+  // We'll use a simple colored placeholder image
+  const canvas = document.createElement('canvas');
+  canvas.width = 400; canvas.height = 300;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#1B212A'; ctx.fillRect(0,0,400,300);
+  ctx.fillStyle = '#D4B579'; ctx.font = 'bold 24px sans-serif'; ctx.textAlign = 'center';
+  ctx.fillText('HVAC Manual', 200, 150);
+  const placeholder = canvas.toDataURL('image/png');
+  
+  const canvas2 = document.createElement('canvas');
+  canvas2.width = 400; canvas2.height = 300;
+  const ctx2 = canvas2.getContext('2d');
+  ctx2.fillStyle = '#1B212A'; ctx2.fillRect(0,0,400,300);
+  ctx2.fillStyle = '#D4B579'; ctx2.font = 'bold 24px sans-serif'; ctx2.textAlign = 'center';
+  ctx2.fillText('Warranty Card', 200, 150);
+  const placeholder2 = canvas2.toDataURL('image/png');
+  
+  await db.addDocument({ name: 'HVAC Manual', category: 'Manual', photoPath: placeholder });
+  await db.addDocument({ name: 'Water Heater Warranty', category: 'Warranty', photoPath: placeholder2 });
+  await db.addDocument({ name: 'Roof Repair Receipt', category: 'Receipt', photoPath: placeholder });
+  await db.addDocument({ name: 'Paint Color Record', category: 'Photo', photoPath: placeholder2 });
+  
+  // Select some tasks
+  const tasks = await db.getTasksByCategory('HVAC');
+  if (tasks.length > 0) {
+    await db.toggleTask(tasks[0].id, true);
+    await db.toggleTask(tasks[1].id, true);
+  }
+  const plumbing = await db.getTasksByCategory('Plumbing');
+  if (plumbing.length > 0) {
+    await db.toggleTask(plumbing[0].id, true);
+  }
+  
+  // Mark one as complete
+  if (tasks[0]) {
+    await db.markComplete(tasks[0].id, 'Filter replaced on schedule', 45);
+  }
+  
+  console.log('Data seeded!');
+  document.body.innerHTML = '<div style="font-family:sans-serif;padding:40px;text-align:center;"><h2>Data seeded!</h2><p>Refresh the app to see populated data.</p></div>';
+})();
+</script>
+</body>
+</html>

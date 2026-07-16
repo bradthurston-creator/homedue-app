@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+<meta name="color-scheme" content="light dark">
+<title>DocYourHome — The Owner's Manual for Your Home</title>
+<link rel="stylesheet" href="css/style.css">
+<script src="js/icons.js"></script>
+<script src="js/database.js"></script>
+</head>
+<body>
+
+<div id="app">
+  <div class="status-bar"></div>
+  <header class="app-header">
+    <div>
+      <div class="app-header__eyebrow">DocYourHome</div>
+      <span class="app-header__title">Home</span>
+    </div>
+  </header>
+  <main class="app-main" id="dashboard-content">
+    <div class="loading-state"><div class="loading-spinner"></div><p>Loading your dashboard…</p></div>
+  </main>
+  <nav class="tab-bar">
+    <button class="tab-item tab-item--active" id="nav-dashboard">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M3.5 10.5 12 4l8.5 6.5"/><path d="M5.5 9.5V19a1 1 0 0 0 1 1h4.25v-5.5h2.5V20H17.5a1 1 0 0 0 1-1V9.5"/></svg>
+      <span class="tab-label">Home</span>
+    </button>
+    <button class="tab-item" id="nav-categories">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><rect x="3.5" y="3.5" width="7.5" height="7.5" rx="1.75"/><rect x="13" y="3.5" width="7.5" height="7.5" rx="1.75"/><rect x="3.5" y="13" width="7.5" height="7.5" rx="1.75"/><rect x="13" y="13" width="7.5" height="7.5" rx="1.75"/></svg>
+      <span class="tab-label">Categories</span>
+    </button>
+    <button class="tab-item" id="nav-contractors">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="8.5" cy="8" r="3"/><path d="M2.5 20v-1.5A4.5 4.5 0 0 1 7 14h3a4.5 4.5 0 0 1 4.5 4.5V20"/><circle cx="17" cy="9" r="2.5"/><path d="M15.5 14.2a4 4 0 0 1 4.5 3.95V20"/></svg>
+      <span class="tab-label">Contractors</span>
+    </button>
+    <button class="tab-item" id="nav-records">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M3.5 7.5a1.5 1.5 0 0 1 1.5-1.5h4l2 2.25h8a1.5 1.5 0 0 1 1.5 1.5V17a1.5 1.5 0 0 1-1.5 1.5h-14A1.5 1.5 0 0 1 3.5 17z"/></svg>
+      <span class="tab-label">Records</span>
+    </button>
+    <button class="tab-item" id="nav-settings">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="12" cy="12" r="3.25"/><path d="M12 2.75v2.6M12 18.65v2.6M4.83 4.83l1.84 1.84M17.33 17.33l1.84 1.84M2.75 12h2.6M18.65 12h2.6M4.83 19.17l1.84-1.84M17.33 6.67l1.84-1.84"/></svg>
+      <span class="tab-label">Settings</span>
+    </button>
+  </nav>
+</div>
+
+<script src="js/app.js"></script>
+<script>
+(async function() {
+  // Wait for app to init
+  await new Promise(r => setTimeout(r, 100));
+  
+  // Seed data
+  localStorage.setItem('homedue_purchased', 'true');
+  localStorage.setItem('homedue_cloud', 'true');
+  
+  const tasks = await db.getTasksByCategory('HVAC');
+  if (tasks.length > 0) {
+    await db.toggleTask(tasks[0].id, true);
+    await db.toggleTask(tasks[1].id, true);
+  }
+  const plumbing = await db.getTasksByCategory('Plumbing');
+  if (plumbing.length > 0) {
+    await db.toggleTask(plumbing[0].id, true);
+  }
+  const safety = await db.getTasksByCategory('Safety');
+  if (safety.length > 0) {
+    await db.toggleTask(safety[0].id, true);
+  }
+  
+  if (tasks.length > 0) {
+    await db.markComplete(tasks[0].id, 'Filter replaced on schedule', 45);
+  }
+  
+  // Re-render dashboard
+  App.store = {}; // reset store cache
+  App.showScreen('dashboard');
+  
+  document.title = 'DocYourHome Dashboard';
+})();
+</script>
+</body>
+</html>

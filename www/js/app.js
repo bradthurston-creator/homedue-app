@@ -687,7 +687,7 @@ const App = {
                     const catColors = { Manual: '#4A7FA6', Warranty: '#B8935B', Receipt: '#3E6B54', Photo: '#6B5B8A', Other: '#5C6472' };
                     const catColor = catColors[d.category] || '#5C6472';
                     html += `
-                        <div class="doc-card">
+                        <div class="doc-card" onclick="App._viewDocument('${d.id}')">
                             <div class="doc-card__image">
                                 <img src="${d.photoPath}" alt="${d.name}" loading="lazy">
                             </div>
@@ -784,6 +784,22 @@ const App = {
             this.showToast('Document deleted');
             this._renderRecords();
         }
+    },
+
+    async _viewDocument(id) {
+        const docs = await db.getDocuments();
+        const doc = docs.find(d => d.id === id);
+        if (!doc) return;
+        const overlay = document.createElement('div');
+        overlay.className = 'doc-viewer';
+        overlay.innerHTML = `
+            <div class="doc-viewer__bg" onclick="this.parentElement.remove()"></div>
+            <div class="doc-viewer__content">
+                <button class="doc-viewer__close" onclick="this.closest('.doc-viewer').remove()">${Icon('x', {size: 20})}</button>
+                <img src="${doc.photoPath}" alt="${doc.name}">
+                <div class="doc-viewer__info">${doc.name} <span class="doc-viewer__cat">${doc.category}</span></div>
+            </div>`;
+        document.body.appendChild(overlay);
     },
 
     // ========================
