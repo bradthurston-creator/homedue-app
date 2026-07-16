@@ -689,7 +689,7 @@ const App = {
                     html += `
                         <div class="doc-card" onclick="App._viewDocument('${d.id}')">
                             <div class="doc-card__image">
-                                ${d.docType === 'image' ? `<img src="${d.photoPath}" alt="${d.name}" loading="lazy">` : `<div class="doc-card__pdf-badge">${d.docType === 'pdf' ? Icon('folder', {size: 22}) : Icon('folder', {size: 22})}</div>`}
+                                ${d.docType === 'image' ? `<img src="${d.photoPath}" alt="${d.name}" loading="lazy">` : d.imageDataUrl ? `<img src="${d.imageDataUrl}" alt="${d.name}" loading="lazy">` : `<div class="doc-card__pdf-badge">${d.docType === 'pdf' ? Icon('folder', {size: 22}) : Icon('folder', {size: 22})}</div>`}
                             </div>
                             <div class="doc-card__body">
                                 <div class="doc-card__name">${d.name}</div>
