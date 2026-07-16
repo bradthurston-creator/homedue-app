@@ -742,13 +742,29 @@ const App = {
     //  DOCUMENTS
     // ========================
     async _addDocument() {
-        const type = prompt('Import a PDF or take a photo? (type "pdf" or "photo"):');
-        if (!type) return;
-        if (type.toLowerCase() === 'pdf') {
-            await this._importPDF();
-        } else {
-            await this._takePhotoDoc();
-        }
+        // Show a simple action sheet
+        const c = document.getElementById('records-content');
+        if (!c) return;
+        const overlay = document.createElement('div');
+        overlay.className = 'doc-viewer';
+        const { Icon } = window;
+        overlay.innerHTML = `
+            <div class="doc-viewer__bg" onclick="this.parentElement.remove()"></div>
+            <div class="doc-picker">
+                <h3 class="doc-picker__title">Add Document</h3>
+                <button class="doc-picker__btn" onclick="this.closest('.doc-viewer').remove();App._takePhotoDoc()">
+                    <span class="doc-picker__icon">${Icon('camera', {size: 24})}</span>
+                    <span class="doc-picker__label">Take Photo</span>
+                    <span class="doc-picker__desc">Snap a photo — converts to PDF</span>
+                </button>
+                <button class="doc-picker__btn" onclick="this.closest('.doc-viewer').remove();App._importPDF()">
+                    <span class="doc-picker__icon">${Icon('folder', {size: 24})}</span>
+                    <span class="doc-picker__label">Import PDF</span>
+                    <span class="doc-picker__desc">Pick a PDF from your device</span>
+                </button>
+                <button class="doc-picker__cancel" onclick="this.closest('.doc-viewer').remove()">Cancel</button>
+            </div>`;
+        document.body.appendChild(overlay);
     },
 
     async _importPDF() {
@@ -808,18 +824,31 @@ const App = {
                 imageDataUrl = data;
             }
             // Convert image to PDF using jsPDF
-            const { jsPDF } = window.jspdf;
-            const pdf = new jsPDF('p', 'mm', 'a4');
-            const img = new Image();
-            img.src = imageDataUrl;
-            await new Promise(r => { img.onload = r; });
-            const imgW = img.width, imgH = img.height;
-            const pageW = 210, pageH = 297;
-            const ratio = Math.min(pageW / imgW, pageH / imgH) * 0.9;
-            const dw = imgW * ratio, dh = imgH * ratio;
-            const x = (pageW - dw) / 2, y = (pageH - dh) / 2;
-            pdf.addImage(imageDataUrl, 'JPEG', x, y, dw, dh);
-            const pdfDataUrl = pdf.output('datauristring');
+            let pdfDataUrl;
+            try {
+                if (typeof window.jspdf !== 'undefined' && window.jspdf.jsPDF) {
+                    const { jsPDF } = window.jspdf;
+                    const pdf = new jsPDF('p', 'mm', 'a4');
+                    const img = new Image();
+                    img.src = imageDataUrl;
+                    await new Promise((resolve, reject) => { img.onload = resolve; img.onerror = reject; setTimeout(reject, 10000); });
+                    const imgW = img.width, imgH = img.height;
+                    const pageW = 210, pageH = 297;
+                    const ratio = Math.min(pageW / imgW, pageH / imgH) * 0.9;
+                    const dw = imgW * ratio, dh = imgH * ratio;
+                    const x = (pageW - dw) / 2, y = (pageH - dh) / 2;
+                    pdf.addImage(imageDataUrl, 'JPEG', x, y, dw, dh);
+                    pdfDataUrl = pdf.output('datauristring');
+                } else {
+                    throw new Error('jsPDF not loaded');
+                }
+            } catch (e) {
+                console.warn('PDF conversion failed, storing as image:', e);
+                await db.addDocument({ name, category, docType: 'image', photoPath: imageDataUrl });
+                this.showToast('Photo saved (PDF conversion unavailable)', 'done');
+                this._renderRecords();
+                return;
+            }
             await db.addDocument({ name, category, docType: 'pdf', photoPath: pdfDataUrl });
             this.showToast('Document saved as PDF', 'done');
             this._renderRecords();
@@ -845,7 +874,9 @@ const App = {
         overlay.className = 'doc-viewer';
         let content;
         if (doc.docType === 'pdf') {
-            content = `<iframe class="doc-viewer__pdf" src="${doc.photoPath}"></iframe>`;
+            // Try embed first, fallback to download link
+            content = `<embed class="doc-viewer__pdf" src="${doc.photoPath}" type="application/pdf">
+                <p style="color:rgba(255,255,255,0.6);padding:20px;text-align:center;">PDF preview not available. <a href="${doc.photoPath}" download="${doc.name}.pdf" style="color:#D4B579;">Download PDF</a></p>`;
         } else {
             content = `<img src="${doc.photoPath}" alt="${doc.name}">`;
         }
@@ -854,7 +885,9 @@ const App = {
             <div class="doc-viewer__content">
                 <button class="doc-viewer__close" onclick="this.closest('.doc-viewer').remove()">${Icon('x', {size: 20})}</button>
                 ${content}
-                <div class="doc-viewer__info">${doc.name} <span class="doc-viewer__cat">${doc.category}</span></div>
+                <div class="doc-viewer__info">${doc.name} <span class="doc-viewer__cat">${doc.category}</span>
+                    <a href="${doc.photoPath}" download="${doc.name}.${doc.docType === 'pdf' ? 'pdf' : 'jpg'}" style="color:#D4B579;text-decoration:none;margin-left:12px;font-size:13px;">Download</a>
+                </div>
             </div>`;
         document.body.appendChild(overlay);
     },
