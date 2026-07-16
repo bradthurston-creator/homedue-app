@@ -689,12 +689,12 @@ const App = {
                     html += `
                         <div class="doc-card" onclick="App._viewDocument('${d.id}')">
                             <div class="doc-card__image">
-                                ${d.docType === 'pdf' ? `<div class="doc-card__pdf-badge">${Icon('folder', {size: 22})}</div>` : `<img src="${d.photoPath}" alt="${d.name}" loading="lazy">`}
+                                ${d.docType === 'image' ? `<img src="${d.photoPath}" alt="${d.name}" loading="lazy">` : `<div class="doc-card__pdf-badge">${d.docType === 'pdf' ? Icon('folder', {size: 22}) : Icon('folder', {size: 22})}</div>`}
                             </div>
                             <div class="doc-card__body">
                                 <div class="doc-card__name">${d.name}</div>
                                 <span class="doc-card__category" style="background:${catColor}20;color:${catColor};">${d.category}</span>
-                                <span class="doc-card__date">${d.date}${d.docType === 'pdf' ? ' · PDF' : ''}</span>
+                                <span class="doc-card__date">${d.date}${d.docType !== 'image' ? ' · ' + (d.notes ? d.notes.split('.').pop().toUpperCase() : 'FILE') : ''}</span>
                             </div>
                             <button class="doc-card__delete" onclick="event.stopPropagation();App._deleteDocument('${d.id}')" aria-label="Delete">${Icon('x', {size: 14})}</button>
                         </div>`;
@@ -759,8 +759,8 @@ const App = {
                 </button>
                 <button class="doc-picker__btn" onclick="this.closest('.doc-viewer').remove();App._importPDF()">
                     <span class="doc-picker__icon">${Icon('folder', {size: 24})}</span>
-                    <span class="doc-picker__label">Import PDF</span>
-                    <span class="doc-picker__desc">Pick a PDF from your device</span>
+                    <span class="doc-picker__label">Import File</span>
+                    <span class="doc-picker__desc">Pick a PDF, Word doc, image, or any file</span>
                 </button>
                 <button class="doc-picker__cancel" onclick="this.closest('.doc-viewer').remove()">Cancel</button>
             </div>`;
@@ -770,27 +770,43 @@ const App = {
     async _importPDF() {
         const name = prompt('Document name:');
         if (!name) return;
-        const categories = ['Manual', 'Warranty', 'Receipt', 'Photo', 'Other'];
+        const categories = ['Manual', 'Warranty', 'Receipt', 'Quote', 'Photo', 'Other'];
         const catStr = prompt(`Category (${categories.join(', ')}):`);
         const category = categories.includes(catStr) ? catStr : 'Other';
         try {
             const input = document.createElement('input');
-            input.type = 'file'; input.accept = '.pdf,application/pdf';
+            input.type = 'file'; input.accept = '.pdf,.doc,.docx,.txt,.xls,.xlsx,.jpg,.jpeg,.png,.heic';
             input.onchange = async (e) => {
                 const file = e.target.files[0];
                 if (!file) return;
+                const ext = file.name.split('.').pop().toLowerCase();
+                const isImage = ['jpg','jpeg','png','heic','webp'].includes(ext);
+                const docType = isImage ? 'image' : 'file';
                 const reader = new FileReader();
                 reader.onload = async (ev) => {
-                    await db.addDocument({ name, category, docType: 'pdf', photoPath: ev.target.result });
-                    this.showToast('PDF imported', 'done');
+                    const fileData = ev.target.result;
+                    // Store with original filename info
+                    await db.addDocument({
+                        name,
+                        category,
+                        docType,
+                        photoPath: fileData,
+                        notes: file.name
+                    });
+                    this.showToast(`Imported ${file.name}`, 'done');
                     this._renderRecords();
                 };
-                reader.readAsDataURL(file);
+                if (docType === 'image') {
+                    reader.readAsDataURL(file);
+                } else {
+                    // For non-image files, store as data URL for download
+                    reader.readAsDataURL(file);
+                }
             };
             input.click();
         } catch (e) {
-            console.error('Import PDF error:', e);
-            this.showToast('Could not import PDF');
+            console.error('Import error:', e);
+            this.showToast('Could not import file');
         }
     },
 
@@ -874,11 +890,19 @@ const App = {
         overlay.className = 'doc-viewer';
         let content;
         if (doc.docType === 'pdf') {
-            // Try embed first, fallback to download link
             content = `<embed class="doc-viewer__pdf" src="${doc.photoPath}" type="application/pdf">
                 <p style="color:rgba(255,255,255,0.6);padding:20px;text-align:center;">PDF preview not available. <a href="${doc.photoPath}" download="${doc.name}.pdf" style="color:#D4B579;">Download PDF</a></p>`;
-        } else {
+        } else if (doc.docType === 'image') {
             content = `<img src="${doc.photoPath}" alt="${doc.name}">`;
+        } else {
+            // General file - show download prompt
+            const ext = doc.notes ? doc.notes.split('.').pop().toUpperCase() : 'FILE';
+            content = `<div class="doc-viewer__file">
+                <div class="doc-viewer__file-icon">${Icon('folder', {size: 48})}</div>
+                <p style="color:rgba(255,255,255,0.8);margin:12px 0 4px;font-size:var(--t-base);">${doc.name}</p>
+                <p style="color:rgba(255,255,255,0.5);font-size:var(--t-sm);">${ext} file</p>
+                <a href="${doc.photoPath}" download="${doc.notes || doc.name}" class="doc-viewer__download">Download File</a>
+            </div>`;
         }
         overlay.innerHTML = `
             <div class="doc-viewer__bg" onclick="this.parentElement.remove()"></div>
