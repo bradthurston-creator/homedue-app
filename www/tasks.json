@@ -46,25 +46,25 @@
       "id": "hvac-06",
       "category": "HVAC",
       "name": "Clean evaporator coils",
-      "freqDays": 912,
+      "freqDays": 730,
       "season": "Spring",
-      "notes": "Indoor unit coils"
+      "notes": "Indoor unit coils — Every 2 years"
     },
     {
       "id": "hvac-07",
       "category": "HVAC",
       "name": "Inspect ductwork for leaks",
-      "freqDays": 1461,
-      "season": "Any",
-      "notes": "Can waste 20-30% of heating/cooling"
+      "freqDays": 1460,
+      "season": "Spring",
+      "notes": "Can waste 20-30% of heating/cooling — Every 4 years"
     },
     {
       "id": "hvac-08",
       "category": "HVAC",
       "name": "Clean blower fan",
-      "freqDays": 912,
+      "freqDays": 730,
       "season": "Spring",
-      "notes": "Improves airflow efficiency"
+      "notes": "Improves airflow efficiency — Every 2 years"
     },
     {
       "id": "hvac-09",

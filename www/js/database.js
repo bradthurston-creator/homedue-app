@@ -1,12 +1,12 @@
 // DocYourHome — Database Module
 
 const DB_NAME = 'homedue';
-const BACKUP_URL = 'http://129.121.78.85:5052';
+// (unused — app.js API_URL is the actual backup endpoint)
 
 class HomeDueDB {
     constructor() {
         this.ready = false;
-        this.store = { tasks: [], userTasks: [], completedLog: [], contractors: [], equipment: [], documents: [] };
+        this.store = { tasks: [], userTasks: [], customTasks: [], completedLog: [], contractors: [], equipment: [], documents: [] };
     }
 
     async init() {
@@ -27,6 +27,7 @@ class HomeDueDB {
             try { this.store = JSON.parse(saved); } catch(e) {}
         }
         if (!this.store.documents) this.store.documents = [];
+        if (!this.store.customTasks) this.store.customTasks = [];
     }
 
     _saveStore() {
@@ -50,12 +51,15 @@ class HomeDueDB {
     async getCategories() {
         const map = {};
         for (const t of this.store.tasks) map[t.category] = (map[t.category] || 0) + 1;
-        return Object.entries(map).map(([category, count]) => ({ category, count }));
+        for (const t of this.store.customTasks) map[t.category] = (map[t.category] || 0) + 1;
+        return Object.entries(map).map(([category, count]) => ({ category, count })).sort((a, b) => a.category.localeCompare(b.category));
     }
 
     async getTasksByCategory(category) {
         const tasks = this._where(this.store.tasks, t => t.category === category);
-        return tasks.map(t => {
+        const customTasks = this._where(this.store.customTasks, t => t.category === category);
+        const merged = [...tasks, ...customTasks];
+        return merged.map(t => {
             const ut = this.store.userTasks.find(u => u.task_id === t.id) || {};
             return { ...t, active: ut.active || 0, last_completed: ut.last_completed || null, next_due: ut.next_due || null, custom_freq: ut.custom_freq || null };
         });
@@ -103,7 +107,7 @@ class HomeDueDB {
     }
 
     async getStats() {
-        return { total: this.store.tasks.length, active: this.store.userTasks.filter(u=>u.active).length, completed: this.store.completedLog.length };
+        return { total: this.store.tasks.length + this.store.customTasks.length, active: this.store.userTasks.filter(u=>u.active).length, completed: this.store.completedLog.length };
     }
 
     async getCompletionHistory(limit = 50) {
@@ -159,7 +163,42 @@ class HomeDueDB {
         this._saveStore();
     }
 
-    async exportBackup() { return { version:'1.0', exported:new Date().toISOString(), tasks:this.store.tasks, userTasks:this.store.userTasks, completionLog:this.store.completedLog, contractors:this.store.contractors, equipment:this.store.equipment, documents:this.store.documents }; }
+    // ========================
+    //  CUSTOM TASKS
+    // ========================
+    async addCustomTask(name, category, freqDays, season) {
+        const newId = 'custom-' + Date.now();
+        const customTask = { id: newId, name, category, freqDays: parseInt(freqDays) || 90, season: season || 'Year-round', notes: '' };
+        if (!this.store.customTasks) this.store.customTasks = [];
+        this.store.customTasks.push(customTask);
+        this._saveStore();
+        return customTask;
+    }
+
+    async updateCustomFreq(taskId, customFreqDays) {
+        const existing = this.store.userTasks.find(u => u.task_id === taskId);
+        const freqVal = parseInt(customFreqDays) || null;
+        if (existing) {
+            existing.custom_freq = freqVal;
+        } else {
+            this.store.userTasks.push({ task_id: taskId, active: 0, custom_freq: freqVal, last_completed: null, next_due: null });
+        }
+        // Recalculate next due if active
+        if (freqVal && existing?.active) {
+            const nextDate = new Date(); nextDate.setDate(nextDate.getDate() + freqVal);
+            existing.next_due = nextDate.toISOString().split('T')[0];
+        }
+        this._saveStore();
+    }
+
+    async deleteCustomTask(taskId) {
+        if (!taskId.startsWith('custom-')) return; // only custom tasks can be deleted
+        this.store.customTasks = (this.store.customTasks || []).filter(t => t.id !== taskId);
+        this.store.userTasks = this.store.userTasks.filter(u => u.task_id !== taskId);
+        this._saveStore();
+    }
+
+    async exportBackup() { return { version:'1.0', exported:new Date().toISOString(), tasks:this.store.tasks, customTasks:this.store.customTasks, userTasks:this.store.userTasks, completionLog:this.store.completedLog, contractors:this.store.contractors, equipment:this.store.equipment, documents:this.store.documents }; }
 
     async importBackup(data) {
         if (data.userTasks) this.store.userTasks = data.userTasks;

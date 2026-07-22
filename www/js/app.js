@@ -2,7 +2,7 @@
 // Navigation, rendering, backup, purchase gating.
 // Visual layer rebuilt: custom icon system, Home Health Score, premium task cards, dark mode.
 
-const API_URL = 'http://129.121.78.85:5052';
+const API_URL = 'https://docyourhome.com/api';
 
 const App = {
     currentScreen: null,
@@ -471,7 +471,55 @@ const App = {
             });
             html += '</div>';
         }
+        html += `<button class="fab" onclick="App._openAddTask('${category}')" aria-label="Add task">${Icon('plus', {size: 22})}</button>`;
         c.innerHTML = html;
+    },
+
+    _openAddTask(category) {
+        this._addTaskCategory = category;
+        document.getElementById('input-new-task-name').value = '';
+        document.getElementById('input-new-task-freq').value = '';
+        document.getElementById('input-new-task-season').value = 'Year-round';
+        document.querySelectorAll('#freq-presets-new .freq-btn').forEach(b => b.classList.remove('active'));
+        this._openModal('modal-add-task');
+    },
+
+    async _saveNewTask() {
+        const name = document.getElementById('input-new-task-name').value.trim();
+        const freq = document.getElementById('input-new-task-freq').value || 90;
+        const season = document.getElementById('input-new-task-season').value;
+        if (!name) { this.showToast('Enter a task name'); return; }
+        await db.addCustomTask(name, this._addTaskCategory, freq, season);
+        this._closeModal('modal-add-task');
+        this.showToast('Task added', 'done');
+        this.showScreen('category', { category: this._addTaskCategory });
+    },
+
+    _showFreqModal() {
+        document.getElementById('input-freq-custom').value = '';
+        document.querySelectorAll('#freq-presets-edit .freq-btn').forEach(b => b.classList.remove('active'));
+        this._openModal('modal-freq');
+    },
+
+    async _saveFreq() {
+        const customFreq = document.getElementById('input-freq-custom').value;
+        if (!customFreq || parseInt(customFreq) < 1) { this.showToast('Enter a valid frequency'); return; }
+        await db.updateCustomFreq(this._currentTaskId, customFreq);
+        this._closeModal('modal-freq');
+        this.showToast('Frequency updated', 'done');
+        this.showScreen('taskdetail', { taskId: this._currentTaskId });
+    },
+
+    async _deleteCurrentTask() {
+        if (!this._currentTaskId) return;
+        if (this._currentTaskId.startsWith('custom-')) {
+            await db.deleteCustomTask(this._currentTaskId);
+            this.showToast('Task deleted');
+        } else {
+            db.toggleTask(this._currentTaskId, false);
+            this.showToast('Task deactivated');
+        }
+        this.showScreen(this._detailReturnScreen || 'dashboard');
     },
 
     async toggleTask(taskId, active) {
@@ -1168,6 +1216,14 @@ const App = {
                 </button>
 
                 <div class="detail-actions">
+                    <div class="detail-action" onclick="App._showFreqModal()">
+                        <div class="detail-action__icon">${Icon('clock', {size: 18})}</div>
+                        <div class="detail-action__content">
+                            <div class="detail-action__title">Frequency</div>
+                            <div class="detail-action__subtitle">${freqText}</div>
+                        </div>
+                        <span class="detail-action__chevron">${Icon('chevronRight', {size: 16})}</span>
+                    </div>
                     <div class="detail-action" onclick="App._showNoteModal()">
                         <div class="detail-action__icon">${Icon('checklist', {size: 18})}</div>
                         <div class="detail-action__content">
@@ -1206,7 +1262,6 @@ const App = {
 
                 <div class="detail-meta">
                     <div class="detail-meta__header">${Icon('checklist', {size: 16})}<span class="detail-meta__title">Task Info</span></div>
-                    <div class="detail-meta__row"><span class="detail-meta__label">Frequency</span><span class="detail-meta__value">${freqText}</span></div>
                     <div class="detail-meta__row"><span class="detail-meta__label">Season</span><span class="detail-meta__value">${task.season || 'Year-round'}</span></div>
                     <div class="detail-meta__row"><span class="detail-meta__label">Last Done</span><span class="detail-meta__value">${lastDone}</span></div>
                     <div class="detail-meta__row"><span class="detail-meta__label">Next Due</span><span class="detail-meta__value">${task.next_due || '—'}</span></div>
@@ -1321,13 +1376,6 @@ const App = {
         db.markComplete(taskId, this._currentNotes, this._currentCost);
         this.showToast('Task completed', 'done');
         this.showScreen('taskdetail', { taskId });
-    },
-
-    _deleteCurrentTask() {
-        if (!this._currentTaskId) return;
-        db.toggleTask(this._currentTaskId, false);
-        this.showToast('Task deactivated');
-        this.showScreen(this._detailReturnScreen || 'dashboard');
     },
 
     // ========================

@@ -961,3 +961,29 @@ textarea.input-field { min-height: 100px; resize: vertical; font-family: inherit
 .text-muted-sm { font-size: var(--t-xs); color: var(--text-tertiary); }
 .flex-row { display: flex; align-items: center; }
 .gap-2 { gap: var(--s-2); }
+
+/* ---------- FAB (Add Task) ---------- */
+.fab {
+  position: fixed; bottom: 80px; right: var(--s-4);
+  width: 52px; height: 52px; border-radius: var(--r-full);
+  background: var(--accent); color: var(--accent-contrast);
+  border: none; box-shadow: var(--shadow-lg);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; z-index: 10;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.fab:active { transform: scale(0.92); box-shadow: var(--shadow-md); }
+
+/* ---------- Frequency Presets ---------- */
+.freq-presets {
+  display: grid; grid-template-columns: 1fr 1fr 1fr;
+  gap: var(--s-2); margin-bottom: var(--s-3);
+}
+.freq-btn {
+  padding: var(--s-2) var(--s-2); border: 1px solid var(--border);
+  border-radius: var(--r-md); background: var(--surface-1);
+  color: var(--text-secondary); font-size: var(--t-xs);
+  text-align: center; cursor: pointer; transition: all 0.15s;
+}
+.freq-btn:active { background: var(--surface-2); }
+.freq-btn.active { background: var(--accent); color: var(--accent-contrast); border-color: var(--accent); }

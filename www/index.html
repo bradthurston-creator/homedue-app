@@ -262,6 +262,61 @@
     </div>
   </div>
 
+  <!-- Add Custom Task Modal -->
+  <div id="modal-add-task" class="modal-overlay">
+    <div class="modal-sheet">
+      <div class="modal-sheet__handle"></div>
+      <div class="modal-sheet__title">New Task</div>
+      <label class="input-label">Task Name</label>
+      <input id="input-new-task-name" class="input-field" type="text" placeholder="e.g. Clean gutters">
+      <label class="input-label">Frequency</label>
+      <div class="freq-presets" id="freq-presets-new">
+        <button class="freq-btn" data-days="7">Weekly</button>
+        <button class="freq-btn" data-days="14">2 Weeks</button>
+        <button class="freq-btn" data-days="30">Monthly</button>
+        <button class="freq-btn" data-days="90">Quarterly</button>
+        <button class="freq-btn" data-days="180">6 Months</button>
+        <button class="freq-btn" data-days="365">Yearly</button>
+      </div>
+      <input id="input-new-task-freq" class="input-field" type="number" min="1" placeholder="Or enter custom days">
+      <label class="input-label">Season</label>
+      <select id="input-new-task-season" class="input-field">
+        <option value="Year-round">Year-round</option>
+        <option value="Spring">Spring</option>
+        <option value="Summer">Summer</option>
+        <option value="Fall">Fall</option>
+        <option value="Winter">Winter</option>
+        <option value="Spring/Fall">Spring/Fall</option>
+      </select>
+      <div class="modal-actions">
+        <button class="btn btn--secondary" onclick="App._closeModal('modal-add-task')">Cancel</button>
+        <button class="btn btn--primary" onclick="App._saveNewTask()">Add Task</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Change Frequency Modal -->
+  <div id="modal-freq" class="modal-overlay">
+    <div class="modal-sheet">
+      <div class="modal-sheet__handle"></div>
+      <div class="modal-sheet__title">Change Frequency</div>
+      <p class="text-muted-sm" style="margin-bottom:var(--s-3);">Pick a new schedule for this task.</p>
+      <div class="freq-presets" id="freq-presets-edit">
+        <button class="freq-btn" data-days="7">Weekly</button>
+        <button class="freq-btn" data-days="14">2 Weeks</button>
+        <button class="freq-btn" data-days="30">Monthly</button>
+        <button class="freq-btn" data-days="90">Quarterly</button>
+        <button class="freq-btn" data-days="180">6 Months</button>
+        <button class="freq-btn" data-days="365">Yearly</button>
+      </div>
+      <input id="input-freq-custom" class="input-field" type="number" min="1" placeholder="Or enter custom days">
+      <div class="modal-actions">
+        <button class="btn btn--secondary" onclick="App._closeModal('modal-freq')">Cancel</button>
+        <button class="btn btn--primary" onclick="App._saveFreq()">Save</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Toast -->
   <div id="toast" class="toast"></div>
 
@@ -291,6 +346,18 @@
 
       const photoZoneIcon = document.querySelector('#photo-upload-zone span:first-child');
       if (photoZoneIcon) photoZoneIcon.innerHTML = Icon('camera', {size: 28});
+
+      // Frequency preset click handlers
+      document.querySelectorAll('.freq-presets').forEach(group => {
+        group.querySelectorAll('.freq-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            group.querySelectorAll('.freq-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const input = group.closest('.modal-sheet').querySelector('input[type="number"]');
+            if (input) input.value = btn.dataset.days;
+          });
+        });
+      });
 
       App.init();
     });

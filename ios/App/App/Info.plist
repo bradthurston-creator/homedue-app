@@ -45,9 +45,11 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
-	<key>NSCameraUsageDescription</key>
-	<string>DocYourHome uses your camera to take photos of manuals, warranties, receipts, and other home documents.</string>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>DocYourHome saves photos of manuals, warranties, receipts, and home documents to your photo library for safekeeping.</string>
+		<key>NSCameraUsageDescription</key>
+		<string>DocYourHome uses your camera to take photos of manuals, warranties, receipts, and other home documents.</string>
+		<key>NSPhotoLibraryUsageDescription</key>
+		<string>DocYourHome saves photos of manuals, warranties, receipts, and home documents to your photo library for safekeeping.</string>
+		<key>NSUserNotificationsUsageDescription</key>
+		<string>DocYourHome sends local notifications to remind you when home maintenance tasks are due.</string>
 </dict>
 </plist>
